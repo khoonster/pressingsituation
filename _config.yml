@@ -1,0 +1,20 @@
+# Site settings
+title: Pressing Situation
+email: khoon@khoonster.com
+description: ""
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://pressingsituation.com"
+
+# Build settings
+markdown: kramdown
+exclude:
+  - bin
+  - bower_components
+  - bower.json
+  - CNAME
+  - Gemfile*
+  - gulpfile.js
+  - LICENSE
+  - package.json
+  - README*
+  - node_modules
