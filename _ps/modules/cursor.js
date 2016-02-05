@@ -1,15 +1,43 @@
 var Cursor = Group.extend({
   initialize: function () {
-    var hand = new Shape.Rectangle(0, 0, 40, 40);
-    hand.fillColor = 'rgb(255, 0, 0)';
-
     Group.prototype.initialize.call(this);
 
-    this.addChild(hand);
+    var cursorSVG = document.getElementById('cursor');
+
+    this.clickZoneOffset = new Size(10, -10);
+    this.wiggleOffset = new Size(0, 0);
+
+    this.importSVG(cursorSVG);
+
+    this.on('frame', function (event) {
+      var xWiggle = Math.sin((2 * Math.PI / 150) * event.count) * 40;
+      var yWiggle = Math.sin((2 * Math.PI / 100) * event.count) * 40;
+
+      this.wiggleOffset = new Point(xWiggle, yWiggle);
+
+      this.updatePosition();
+    });
   },
 
   moveTo: function (point) {
-    this.position = point - this.bounds.size / 2;
+    this.cursorPosition = new Size(point);
+
+    this.updatePosition();
+  },
+
+  updatePosition: function () {
+    this.position = this.cursorPosition + this.offset() + this.wiggleOffset;
+  },
+
+  offset: function () {
+    return new Size(
+      this.bounds.size.width / -2,
+      this.bounds.size.height / 2
+    ) + this.clickZoneOffset;
+  },
+
+  rotate: function (angle) {
+    // Group.prototype.rotate.call(this, angle, this.position - this.offset());
   }
 });
 
