@@ -5,6 +5,11 @@ var Cursor = require('./modules/cursor.js');
 
 var cursor = new Cursor();
 
+var hoverRect = new Shape.Rectangle(view.center, new Size(100, 100));
+hoverRect.fillColor = 'blue';
+hoverRect.onMouseEnter = function () { this.fillColor = 'red'; };
+hoverRect.onMouseLeave = function () { this.fillColor = 'blue'; };
+
 view.onMouseMove = function (event) {
   cursor.moveTo(event.point);
 }
@@ -16,12 +21,23 @@ view.onMouseDown = function (event) {
 
 var oldEventHandler = view._handleEvent;
 
-view._handleEvent = function (type, point, event) {
-  if (type === 'mousedown' || type === 'mouseup') {
-    point = cursor.focusPoint();
-  }
+var wiggle = new Point(0, 0);
+var realPosition = new Point(-9999999, 0);
 
-  oldEventHandler.call(view, type, point, event)
+view.onFrame = function (event) {
+  var xWiggle = Math.sin((2 * Math.PI / 150) * event.count) * 100;
+  var yWiggle = Math.sin((2 * Math.PI / 100) * event.count) * 100;
+
+  wiggle = new Point(xWiggle, yWiggle);
+
+  view._handleEvent('mousemove', realPosition, event);
+}
+
+view._handleEvent = function (type, point, event) {
+  realPosition = point;
+  point = point + wiggle;
+
+  oldEventHandler.call(view, type, point, event);
 }
 
 },{"./modules/cursor.js":2}],2:[function(require,module,exports){
@@ -32,18 +48,8 @@ var Cursor = Group.extend({
     var cursorSVG = document.getElementById('cursor');
 
     this.clickZoneOffset = new Size(10, -10);
-    this.wiggleOffset = new Size(0, 0);
 
     this.importSVG(cursorSVG);
-
-    this.on('frame', function (event) {
-      var xWiggle = Math.sin((2 * Math.PI / 150) * event.count) * 40;
-      var yWiggle = Math.sin((2 * Math.PI / 100) * event.count) * 40;
-
-      this.wiggleOffset = new Point(xWiggle, yWiggle);
-
-      this.updatePosition();
-    });
   },
 
   moveTo: function (point) {
@@ -53,7 +59,7 @@ var Cursor = Group.extend({
   },
 
   updatePosition: function () {
-    this.position = this.cursorPosition + this.offset() + this.wiggleOffset;
+    this.position = this.cursorPosition + this.offset();
   },
 
   offset: function () {

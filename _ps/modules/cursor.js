@@ -5,18 +5,8 @@ var Cursor = Group.extend({
     var cursorSVG = document.getElementById('cursor');
 
     this.clickZoneOffset = new Size(10, -10);
-    this.wiggleOffset = new Size(0, 0);
 
     this.importSVG(cursorSVG);
-
-    this.on('frame', function (event) {
-      var xWiggle = Math.sin((2 * Math.PI / 150) * event.count) * 40;
-      var yWiggle = Math.sin((2 * Math.PI / 100) * event.count) * 40;
-
-      this.wiggleOffset = new Point(xWiggle, yWiggle);
-
-      this.updatePosition();
-    });
   },
 
   moveTo: function (point) {
@@ -26,7 +16,7 @@ var Cursor = Group.extend({
   },
 
   updatePosition: function () {
-    this.position = this.cursorPosition + this.offset() + this.wiggleOffset;
+    this.position = this.cursorPosition + this.offset();
   },
 
   offset: function () {
