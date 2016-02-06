@@ -28,6 +28,10 @@ var Cursor = Group.extend({
 
   focusPoint: function () {
     return this.cursorPosition + this.wiggleOffset;
+  },
+
+  _hitTest: function() {
+    return false;
   }
 });
 
