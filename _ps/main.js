@@ -20,8 +20,8 @@ view.onMouseDown = function (event) {
 }
 
 hijackViewMousePosition(view, function (event) {
-  var wiggleLength = 15;
-  var wiggleSpeed = wiggleLength / 1.5;
+  var wiggleLength = 7;
+  var wiggleSpeed = wiggleLength;
   var xWiggle = Math.sin((2 * Math.PI / wiggleSpeed) * event.count) * wiggleLength;
   var yWiggle = Math.sin((2 * Math.PI / wiggleSpeed) * event.count) * wiggleLength / 4;
 
