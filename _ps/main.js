@@ -1,6 +1,7 @@
 'use strict';
 
 var Cursor = require('./modules/cursor.js');
+var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js');
 
 var cursor = new Cursor();
 
@@ -18,23 +19,9 @@ view.onMouseDown = function (event) {
   rect.fillColor = 'blue';
 }
 
-var oldEventHandler = view._handleEvent;
-
-var wiggle = new Point(0, 0);
-var realPosition = new Point(-9999999, 0);
-
-view.onFrame = function (event) {
+hijackViewMousePosition(view, function (event) {
   var xWiggle = Math.sin((2 * Math.PI / 150) * event.count) * 100;
   var yWiggle = Math.sin((2 * Math.PI / 100) * event.count) * 100;
 
-  wiggle = new Point(xWiggle, yWiggle);
-
-  view._handleEvent('mousemove', realPosition, event);
-}
-
-view._handleEvent = function (type, point, event) {
-  realPosition = point;
-  point = point + wiggle;
-
-  oldEventHandler.call(view, type, point, event);
-}
+  return new Point(xWiggle, yWiggle);
+});
