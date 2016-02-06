@@ -8,8 +8,17 @@ view.onMouseMove = function (event) {
   cursor.moveTo(event.point);
 }
 
-view.onFrame = function (event) {
-  // cursor.rotate(1);
+view.onMouseDown = function (event) {
+  var rect = new Shape.Rectangle(event.point - new Point(5, 5), new Size(10, 10));
+  rect.fillColor = 'blue';
 }
 
-console.log(view);
+var oldEventHandler = view._handleEvent;
+
+view._handleEvent = function (type, point, event) {
+  if (type === 'mousedown' || type === 'mouseup') {
+    point = cursor.focusPoint();
+  }
+
+  oldEventHandler.call(view, type, point, event)
+}

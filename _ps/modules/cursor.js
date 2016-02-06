@@ -20,7 +20,7 @@ var Cursor = Group.extend({
   },
 
   moveTo: function (point) {
-    this.cursorPosition = new Size(point);
+    this.cursorPosition = new Point(point);
 
     this.updatePosition();
   },
@@ -36,8 +36,8 @@ var Cursor = Group.extend({
     ) + this.clickZoneOffset;
   },
 
-  rotate: function (angle) {
-    // Group.prototype.rotate.call(this, angle, this.position - this.offset());
+  focusPoint: function () {
+    return this.cursorPosition + this.wiggleOffset;
   }
 });
 

@@ -9,11 +9,20 @@ view.onMouseMove = function (event) {
   cursor.moveTo(event.point);
 }
 
-view.onFrame = function (event) {
-  // cursor.rotate(1);
+view.onMouseDown = function (event) {
+  var rect = new Shape.Rectangle(event.point - new Point(5, 5), new Size(10, 10));
+  rect.fillColor = 'blue';
 }
 
-console.log(view);
+var oldEventHandler = view._handleEvent;
+
+view._handleEvent = function (type, point, event) {
+  if (type === 'mousedown' || type === 'mouseup') {
+    point = cursor.focusPoint();
+  }
+
+  oldEventHandler.call(view, type, point, event)
+}
 
 },{"./modules/cursor.js":2}],2:[function(require,module,exports){
 var Cursor = Group.extend({
@@ -38,7 +47,7 @@ var Cursor = Group.extend({
   },
 
   moveTo: function (point) {
-    this.cursorPosition = new Size(point);
+    this.cursorPosition = new Point(point);
 
     this.updatePosition();
   },
@@ -54,8 +63,8 @@ var Cursor = Group.extend({
     ) + this.clickZoneOffset;
   },
 
-  rotate: function (angle) {
-    // Group.prototype.rotate.call(this, angle, this.position - this.offset());
+  focusPoint: function () {
+    return this.cursorPosition + this.wiggleOffset;
   }
 });
 
