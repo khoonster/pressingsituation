@@ -3,9 +3,17 @@
 
 var Button = require('./modules/button.js');
 var Cursor = require('./modules/cursor.js');
+var Grid = require('./modules/grid.js');
 var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js');
 
 var button = new Button(view.bounds.center);
+var button2 = new Button(view.bounds.center);
+
+var grid = new Grid(view.bounds.center, [button, button2], {
+  columns: 13,
+  rows: 9,
+  cellSize: new Size(60, 60)
+})
 
 var cursor = new Cursor();
 
@@ -22,7 +30,7 @@ hijackViewMousePosition(view, function (event) {
   return new Point(xWiggle, yWiggle);
 });
 
-},{"./modules/button.js":2,"./modules/cursor.js":3,"./modules/hijack_view_mouse_position.js":4}],2:[function(require,module,exports){
+},{"./modules/button.js":2,"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5}],2:[function(require,module,exports){
 var Button = Group.extend({
   initialize: function (point) {
     var top = new Shape.Rectangle(new Point(0, 0), new Size(54, 54));
@@ -97,6 +105,30 @@ var Cursor = Group.extend({
 module.exports = Cursor;
 
 },{}],4:[function(require,module,exports){
+var Grid = Group.extend({
+  initialize: function (position, children, options) {
+    var columns = options.columns;
+    var rows = options.rows;
+    var cellSize = options.cellSize;
+
+    Group.prototype.initialize.call(this);
+
+    for (var i = 0; i < children.length; i++) {
+      var child = children[i];
+      var leftOffset = cellSize.width * (i % columns);
+      var topOffset = cellSize.height * Math.floor(i / columns);
+      this.addChild(child);
+
+      child.position = new Point(leftOffset, topOffset);
+    }
+
+    this.position = position;
+  }
+});
+
+module.exports = Grid;
+
+},{}],5:[function(require,module,exports){
 module.exports = function hijackViewMousePosition(view, offsetFn) {
   var oldEventHandler = view._handleEvent;
 
