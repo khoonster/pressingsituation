@@ -9,15 +9,17 @@ var Cursor = require('./modules/cursor.js');
 var Grid = require('./modules/grid.js');
 var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js');
 
-var buttons = times(construct(Button, view.bounds.center), 117);
+var buttons = times(construct(Button, view.bounds.center), 288);
 
 var grid = new Grid(view.bounds.center, buttons, {
-  columns: 13,
-  rows: 9,
+  columns: 24,
+  rows: 12,
   cellSize: new Size(58, 58)
 })
 
 var cursor = new Cursor();
+
+var gamefield = new Group([grid, cursor]);
 
 view.onMouseMove = function (event) {
   cursor.moveTo(event.point);
