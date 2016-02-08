@@ -10,6 +10,7 @@
     "gulp-browserify": "^0.5.0",
     "gulp-concat": "^2.4.1",
     "gulp-jslint": "^0.2.1",
+    "lodash.shuffle": "^4.0.0",
     "main-bower-files": "~2.1.0",
     "ramda": "^0.19.1"
   },

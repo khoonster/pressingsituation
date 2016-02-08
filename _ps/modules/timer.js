@@ -1,5 +1,7 @@
 var Timer = Group.extend({
   initialize: function (position, milliseconds) {
+    this.running = false;
+
     this.startTime = (new Date()).getTime();
     this.duration = milliseconds;
     this.startPosition = position;
@@ -9,6 +11,14 @@ var Timer = Group.extend({
     this.circle.strokeWidth = 2;
 
     Group.prototype.initialize.call(this, [this.circle]);
+
+    this.on("started", function () {
+      this.running = true;
+    });
+
+    this.on("ended", function () {
+      this.running = false;
+    })
   },
 
   drawSlice: function (center, radius, angle, percentage) {
