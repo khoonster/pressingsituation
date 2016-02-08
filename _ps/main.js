@@ -6,7 +6,7 @@ var invoker = require('ramda/src/invoker');
 var map = require('ramda/src/map');
 var shuffle = require('lodash.shuffle');
 
-var Button = require('./modules/button.js');
+var LosingButton = require('./modules/losing_button.js');
 var WinningButton = require('./modules/winning_button.js');
 var Cursor = require('./modules/cursor.js');
 var Grid = require('./modules/grid.js');
@@ -16,7 +16,7 @@ var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js')
 var cursor = new Cursor();
 var timer = new Timer(view.bounds.center - new Point(0, 324), 60000);
 
-var buttons = times(construct(Button, view.bounds.center), 287);
+var buttons = times(construct(LosingButton, view.bounds.center), 287);
 var winner = new WinningButton(view.bounds.center);
 
 winner.on('click', function () {
