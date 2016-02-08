@@ -45,11 +45,7 @@ var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
   cellSize: new Size(58, 58)
 })
 
-var explosions = new Group();
-explosions.name = 'explosions';
-
-var gamefield = new Group([grid, timer, explosions, cursor]);
-gamefield.name = 'gamefield';
+var gamefield = new Group([grid, timer, cursor]);
 
 view.onMouseMove = function (event) {
   cursor.moveTo(event.point);
