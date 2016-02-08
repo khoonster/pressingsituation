@@ -7,19 +7,21 @@ var construct = require('ramda/src/construct');
 var Button = require('./modules/button.js');
 var Cursor = require('./modules/cursor.js');
 var Grid = require('./modules/grid.js');
+var Timer = require('./modules/timer.js');
 var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js');
 
 var buttons = times(construct(Button, view.bounds.center), 288);
 
-var grid = new Grid(view.bounds.center, buttons, {
+var grid = new Grid(view.bounds.center + new Point(0, 63), buttons, {
   columns: 24,
   rows: 12,
   cellSize: new Size(58, 58)
 })
 
 var cursor = new Cursor();
+var timer = new Timer(view.bounds.center - new Point(0, 324), 60000);
 
-var gamefield = new Group([grid, cursor]);
+var gamefield = new Group([grid, cursor, timer]);
 
 view.onMouseMove = function (event) {
   cursor.moveTo(event.point);
@@ -34,7 +36,11 @@ hijackViewMousePosition(view, function (event) {
   return new Point(xWiggle, yWiggle);
 });
 
-},{"./modules/button.js":2,"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5,"ramda/src/construct":6,"ramda/src/times":16}],2:[function(require,module,exports){
+console.log(timer);
+
+timer.start();
+
+},{"./modules/button.js":2,"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5,"./modules/timer.js":6,"ramda/src/construct":7,"ramda/src/times":17}],2:[function(require,module,exports){
 var Button = Group.extend({
   initialize: function (point) {
     var top = new Shape.Rectangle(new Point(0, 0), new Size(54, 54));
@@ -154,6 +160,62 @@ module.exports = function hijackViewMousePosition(view, offsetFn) {
 }
 
 },{}],6:[function(require,module,exports){
+var Timer = Group.extend({
+  initialize: function (position, milliseconds) {
+    this.startTime = (new Date()).getTime();
+    this.duration = milliseconds;
+
+    var circle = new Shape.Circle(position, 54 / 2 + 2);
+        circle.strokeColor = 'black';
+        circle.strokeWidth = 2;
+
+    Group.prototype.initialize.call(this, [circle]);
+  },
+
+  drawSlice: function (center, radius, angle, percentage) {
+    var circumfrence = 360 * percentage;
+    var from = new Point({ angle: angle, length:radius });
+    var through = center + new Point({ angle: angle + circumfrence/2, length: radius });
+    var to = center + new Point({ angle: angle + circumfrence, length: radius });
+    var path = new Path();
+        path.add(center);
+        path.lineBy(from);
+        path.arcTo(through, to);
+        path.closePath();
+        path.fillColor = 'black';
+        path.data = percentage;
+        path.name = "slice";
+
+    return path;
+  },
+
+  elapsedPercentage: function () {
+    return ((new Date()).getTime() - this.startTime) / this.duration;
+  },
+
+  start: function () {
+    this.emit("started");
+
+    this.on("frame", function () {
+      var percentage = this.elapsedPercentage();
+
+      if (percentage >= 1) return this.end();
+      if (typeof this.slice !== "undefined") this.slice.remove();
+
+      this.slice = this.drawSlice(this.position, 26, -90, percentage)
+      this.addChild(this.slice);
+    });
+  },
+
+  end: function () {
+    this.off("frame");
+    this.emit("ended");
+  }
+});
+
+module.exports = Timer;
+
+},{}],7:[function(require,module,exports){
 var _curry1 = require('./internal/_curry1');
 var constructN = require('./constructN');
 
@@ -187,7 +249,7 @@ module.exports = _curry1(function construct(Fn) {
   return constructN(Fn.length, Fn);
 });
 
-},{"./constructN":7,"./internal/_curry1":11}],7:[function(require,module,exports){
+},{"./constructN":8,"./internal/_curry1":12}],8:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 var curry = require('./curry');
 var nAry = require('./nAry');
@@ -244,7 +306,7 @@ module.exports = _curry2(function constructN(n, Fn) {
   }));
 });
 
-},{"./curry":8,"./internal/_curry2":12,"./nAry":15}],8:[function(require,module,exports){
+},{"./curry":9,"./internal/_curry2":13,"./nAry":16}],9:[function(require,module,exports){
 var _curry1 = require('./internal/_curry1');
 var curryN = require('./curryN');
 
@@ -294,7 +356,7 @@ module.exports = _curry1(function curry(fn) {
   return curryN(fn.length, fn);
 });
 
-},{"./curryN":9,"./internal/_curry1":11}],9:[function(require,module,exports){
+},{"./curryN":10,"./internal/_curry1":12}],10:[function(require,module,exports){
 var _arity = require('./internal/_arity');
 var _curry1 = require('./internal/_curry1');
 var _curry2 = require('./internal/_curry2');
@@ -350,7 +412,7 @@ module.exports = _curry2(function curryN(length, fn) {
   return _arity(length, _curryN(length, [], fn));
 });
 
-},{"./internal/_arity":10,"./internal/_curry1":11,"./internal/_curry2":12,"./internal/_curryN":13}],10:[function(require,module,exports){
+},{"./internal/_arity":11,"./internal/_curry1":12,"./internal/_curry2":13,"./internal/_curryN":14}],11:[function(require,module,exports){
 module.exports = function _arity(n, fn) {
   /* eslint-disable no-unused-vars */
   switch (n) {
@@ -369,7 +431,7 @@ module.exports = function _arity(n, fn) {
   }
 };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var _isPlaceholder = require('./_isPlaceholder');
 
 
@@ -391,7 +453,7 @@ module.exports = function _curry1(fn) {
   };
 };
 
-},{"./_isPlaceholder":14}],12:[function(require,module,exports){
+},{"./_isPlaceholder":15}],13:[function(require,module,exports){
 var _curry1 = require('./_curry1');
 var _isPlaceholder = require('./_isPlaceholder');
 
@@ -421,7 +483,7 @@ module.exports = function _curry2(fn) {
   };
 };
 
-},{"./_curry1":11,"./_isPlaceholder":14}],13:[function(require,module,exports){
+},{"./_curry1":12,"./_isPlaceholder":15}],14:[function(require,module,exports){
 var _arity = require('./_arity');
 var _isPlaceholder = require('./_isPlaceholder');
 
@@ -463,14 +525,14 @@ module.exports = function _curryN(length, received, fn) {
   };
 };
 
-},{"./_arity":10,"./_isPlaceholder":14}],14:[function(require,module,exports){
+},{"./_arity":11,"./_isPlaceholder":15}],15:[function(require,module,exports){
 module.exports = function _isPlaceholder(a) {
   return a != null &&
          typeof a === 'object' &&
          a['@@functional/placeholder'] === true;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 
 
@@ -517,7 +579,7 @@ module.exports = _curry2(function nAry(n, fn) {
   }
 });
 
-},{"./internal/_curry2":12}],16:[function(require,module,exports){
+},{"./internal/_curry2":13}],17:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 
 
@@ -556,4 +618,4 @@ module.exports = _curry2(function times(fn, n) {
   return list;
 });
 
-},{"./internal/_curry2":12}]},{},[1])
+},{"./internal/_curry2":13}]},{},[1])
