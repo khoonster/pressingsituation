@@ -69,22 +69,25 @@ var Button = Group.extend({
   initialize: function (point) {
     var that = this;
 
-    this.top = new Shape.Rectangle(new Point(0, 0), new Size(54, 54));
+    var size = new Size(54, 54);
+    var depth = new Size(9, 9);
+
+    this.top = new Shape.Rectangle(new Point(0, 0), size);
     this.top.fillColor = this.topColor;
 
     this.sides = new Path([
-      new Point(0, 0),
-      new Point(0, 54),
-      new Point(9, 63),
-      new Point(63, 63),
-      new Point(63, 9),
-      new Point(54, 0)
+      new Point(                       0,           0),
+      new Point(                       0, size.height),
+      new Point(             depth.width, size.height + depth.height),
+      new Point(size.width + depth.width, size.height + depth.height),
+      new Point(size.width + depth.width,               depth.height),
+      new Point(size.width,           0)
     ]);
 
     this.sides.closed = true;
     this.sides.fillColor = this.rightSideColor;
 
-    this.bottom = new Shape.Rectangle(new Point(9, 9), new Size(54, 54));
+    this.bottom = new Shape.Rectangle(depth, size);
     this.bottom.fillColor = this.pressedColor;
 
     Group.prototype.initialize.call(this, [this.bottom, this.sides, this.top]);
