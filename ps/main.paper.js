@@ -5,6 +5,8 @@ var times = require('ramda/src/times');
 var construct = require('ramda/src/construct');
 var invoker = require('ramda/src/invoker');
 var map = require('ramda/src/map');
+var drop = require('ramda/src/drop');
+var take = require('ramda/src/take');
 var shuffle = require('lodash.shuffle');
 
 var LosingButton = require('./modules/losing_button.js');
@@ -27,7 +29,8 @@ winner.on('mouseup', function () {
 });
 
 timer.on('ended', function () {
-  map(invoker(0, 'press'), losers);
+  map(invoker(0, 'press'), take(100, losers));
+  map(invoker(0, 'disable'), drop(100, losers));
 });
 
 var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
@@ -57,7 +60,7 @@ hijackViewMousePosition(view, function (event) {
 
 timer.start();
 
-},{"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5,"./modules/losing_button.js":6,"./modules/timer.js":7,"./modules/winning_button.js":8,"lodash.shuffle":9,"ramda/src/construct":16,"ramda/src/invoker":50,"ramda/src/map":54,"ramda/src/times":57}],2:[function(require,module,exports){
+},{"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5,"./modules/losing_button.js":6,"./modules/timer.js":7,"./modules/winning_button.js":8,"lodash.shuffle":9,"ramda/src/construct":16,"ramda/src/drop":20,"ramda/src/invoker":56,"ramda/src/map":60,"ramda/src/take":64,"ramda/src/times":65}],2:[function(require,module,exports){
 var Button = Group.extend({
   topColor: '#ff4600',
   rightSideColor: '#FF1E00',
@@ -1697,7 +1700,7 @@ module.exports = _curry2(function bind(fn, thisObj) {
   });
 });
 
-},{"./internal/_arity":23,"./internal/_curry2":28}],16:[function(require,module,exports){
+},{"./internal/_arity":24,"./internal/_curry2":30}],16:[function(require,module,exports){
 var _curry1 = require('./internal/_curry1');
 var constructN = require('./constructN');
 
@@ -1731,7 +1734,7 @@ module.exports = _curry1(function construct(Fn) {
   return constructN(Fn.length, Fn);
 });
 
-},{"./constructN":17,"./internal/_curry1":27}],17:[function(require,module,exports){
+},{"./constructN":17,"./internal/_curry1":29}],17:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 var curry = require('./curry');
 var nAry = require('./nAry');
@@ -1788,7 +1791,7 @@ module.exports = _curry2(function constructN(n, Fn) {
   }));
 });
 
-},{"./curry":18,"./internal/_curry2":28,"./nAry":55}],18:[function(require,module,exports){
+},{"./curry":18,"./internal/_curry2":30,"./nAry":61}],18:[function(require,module,exports){
 var _curry1 = require('./internal/_curry1');
 var curryN = require('./curryN');
 
@@ -1838,7 +1841,7 @@ module.exports = _curry1(function curry(fn) {
   return curryN(fn.length, fn);
 });
 
-},{"./curryN":19,"./internal/_curry1":27}],19:[function(require,module,exports){
+},{"./curryN":19,"./internal/_curry1":29}],19:[function(require,module,exports){
 var _arity = require('./internal/_arity');
 var _curry1 = require('./internal/_curry1');
 var _curry2 = require('./internal/_curry2');
@@ -1894,7 +1897,42 @@ module.exports = _curry2(function curryN(length, fn) {
   return _arity(length, _curryN(length, [], fn));
 });
 
-},{"./internal/_arity":23,"./internal/_curry1":27,"./internal/_curry2":28,"./internal/_curryN":29}],20:[function(require,module,exports){
+},{"./internal/_arity":24,"./internal/_curry1":29,"./internal/_curry2":30,"./internal/_curryN":32}],20:[function(require,module,exports){
+var _curry2 = require('./internal/_curry2');
+var _dispatchable = require('./internal/_dispatchable');
+var _xdrop = require('./internal/_xdrop');
+var slice = require('./slice');
+
+
+/**
+ * Returns all but the first `n` elements of the given list, string, or
+ * transducer/transformer (or object with a `drop` method).
+ *
+ * Dispatches to the `drop` method of the second argument, if present.
+ *
+ * @func
+ * @memberOf R
+ * @since v0.1.0
+ * @category List
+ * @sig Number -> [a] -> [a]
+ * @sig Number -> String -> String
+ * @param {Number} n
+ * @param {*} list
+ * @return {*}
+ * @see R.take, R.transduce
+ * @example
+ *
+ *      R.drop(1, ['foo', 'bar', 'baz']); //=> ['bar', 'baz']
+ *      R.drop(2, ['foo', 'bar', 'baz']); //=> ['baz']
+ *      R.drop(3, ['foo', 'bar', 'baz']); //=> []
+ *      R.drop(4, ['foo', 'bar', 'baz']); //=> []
+ *      R.drop(3, 'ramda');               //=> 'da'
+ */
+module.exports = _curry2(_dispatchable('drop', _xdrop, function drop(n, xs) {
+  return slice(Math.max(0, n), Infinity, xs);
+}));
+
+},{"./internal/_curry2":30,"./internal/_dispatchable":33,"./internal/_xdrop":50,"./slice":63}],21:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 var _equals = require('./internal/_equals');
 
@@ -1928,7 +1966,7 @@ module.exports = _curry2(function equals(a, b) {
   return _equals(a, b, [], []);
 });
 
-},{"./internal/_curry2":28,"./internal/_equals":31}],21:[function(require,module,exports){
+},{"./internal/_curry2":30,"./internal/_equals":34}],22:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 var _dispatchable = require('./internal/_dispatchable');
 var _filter = require('./internal/_filter');
@@ -1978,7 +2016,7 @@ module.exports = _curry2(_dispatchable('filter', _xfilter, function(pred, filter
   );
 }));
 
-},{"./internal/_curry2":28,"./internal/_dispatchable":30,"./internal/_filter":32,"./internal/_isObject":37,"./internal/_reduce":42,"./internal/_xfilter":47,"./keys":53}],22:[function(require,module,exports){
+},{"./internal/_curry2":30,"./internal/_dispatchable":33,"./internal/_filter":35,"./internal/_isObject":40,"./internal/_reduce":45,"./internal/_xfilter":52,"./keys":59}],23:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 
 
@@ -2016,7 +2054,7 @@ module.exports = _curry2(function identical(a, b) {
   }
 });
 
-},{"./internal/_curry2":28}],23:[function(require,module,exports){
+},{"./internal/_curry2":30}],24:[function(require,module,exports){
 module.exports = function _arity(n, fn) {
   /* eslint-disable no-unused-vars */
   switch (n) {
@@ -2035,7 +2073,7 @@ module.exports = function _arity(n, fn) {
   }
 };
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = function _arrayFromIterator(iter) {
   var list = [];
   var next;
@@ -2045,14 +2083,42 @@ module.exports = function _arrayFromIterator(iter) {
   return list;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
+var _isArray = require('./_isArray');
+var _slice = require('./_slice');
+
+
+/**
+ * Similar to hasMethod, this checks whether a function has a [methodname]
+ * function. If it isn't an array it will execute that function otherwise it
+ * will default to the ramda implementation.
+ *
+ * @private
+ * @param {Function} fn ramda implemtation
+ * @param {String} methodname property to check for a custom implementation
+ * @return {Object} Whatever the return value of the method is.
+ */
+module.exports = function _checkForMethod(methodname, fn) {
+  return function() {
+    var length = arguments.length;
+    if (length === 0) {
+      return fn();
+    }
+    var obj = arguments[length - 1];
+    return (_isArray(obj) || typeof obj[methodname] !== 'function') ?
+      fn.apply(this, arguments) :
+      obj[methodname].apply(obj, _slice(arguments, 0, length - 1));
+  };
+};
+
+},{"./_isArray":39,"./_slice":47}],27:[function(require,module,exports){
 module.exports = function _complement(f) {
   return function() {
     return !f.apply(this, arguments);
   };
 };
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var _indexOf = require('./_indexOf');
 
 
@@ -2060,7 +2126,7 @@ module.exports = function _contains(a, list) {
   return _indexOf(list, a, 0) >= 0;
 };
 
-},{"./_indexOf":34}],27:[function(require,module,exports){
+},{"./_indexOf":37}],29:[function(require,module,exports){
 var _isPlaceholder = require('./_isPlaceholder');
 
 
@@ -2082,7 +2148,7 @@ module.exports = function _curry1(fn) {
   };
 };
 
-},{"./_isPlaceholder":38}],28:[function(require,module,exports){
+},{"./_isPlaceholder":41}],30:[function(require,module,exports){
 var _curry1 = require('./_curry1');
 var _isPlaceholder = require('./_isPlaceholder');
 
@@ -2112,7 +2178,47 @@ module.exports = function _curry2(fn) {
   };
 };
 
-},{"./_curry1":27,"./_isPlaceholder":38}],29:[function(require,module,exports){
+},{"./_curry1":29,"./_isPlaceholder":41}],31:[function(require,module,exports){
+var _curry1 = require('./_curry1');
+var _curry2 = require('./_curry2');
+var _isPlaceholder = require('./_isPlaceholder');
+
+
+/**
+ * Optimized internal three-arity curry function.
+ *
+ * @private
+ * @category Function
+ * @param {Function} fn The function to curry.
+ * @return {Function} The curried function.
+ */
+module.exports = function _curry3(fn) {
+  return function f3(a, b, c) {
+    switch (arguments.length) {
+      case 0:
+        return f3;
+      case 1:
+        return _isPlaceholder(a) ? f3
+             : _curry2(function(_b, _c) { return fn(a, _b, _c); });
+      case 2:
+        return _isPlaceholder(a) && _isPlaceholder(b) ? f3
+             : _isPlaceholder(a) ? _curry2(function(_a, _c) { return fn(_a, b, _c); })
+             : _isPlaceholder(b) ? _curry2(function(_b, _c) { return fn(a, _b, _c); })
+             : _curry1(function(_c) { return fn(a, b, _c); });
+      default:
+        return _isPlaceholder(a) && _isPlaceholder(b) && _isPlaceholder(c) ? f3
+             : _isPlaceholder(a) && _isPlaceholder(b) ? _curry2(function(_a, _b) { return fn(_a, _b, c); })
+             : _isPlaceholder(a) && _isPlaceholder(c) ? _curry2(function(_a, _c) { return fn(_a, b, _c); })
+             : _isPlaceholder(b) && _isPlaceholder(c) ? _curry2(function(_b, _c) { return fn(a, _b, _c); })
+             : _isPlaceholder(a) ? _curry1(function(_a) { return fn(_a, b, c); })
+             : _isPlaceholder(b) ? _curry1(function(_b) { return fn(a, _b, c); })
+             : _isPlaceholder(c) ? _curry1(function(_c) { return fn(a, b, _c); })
+             : fn(a, b, c);
+    }
+  };
+};
+
+},{"./_curry1":29,"./_curry2":30,"./_isPlaceholder":41}],32:[function(require,module,exports){
 var _arity = require('./_arity');
 var _isPlaceholder = require('./_isPlaceholder');
 
@@ -2154,7 +2260,7 @@ module.exports = function _curryN(length, received, fn) {
   };
 };
 
-},{"./_arity":23,"./_isPlaceholder":38}],30:[function(require,module,exports){
+},{"./_arity":24,"./_isPlaceholder":41}],33:[function(require,module,exports){
 var _isArray = require('./_isArray');
 var _isTransformer = require('./_isTransformer');
 var _slice = require('./_slice');
@@ -2195,7 +2301,7 @@ module.exports = function _dispatchable(methodname, xf, fn) {
   };
 };
 
-},{"./_isArray":36,"./_isTransformer":39,"./_slice":43}],31:[function(require,module,exports){
+},{"./_isArray":39,"./_isTransformer":42,"./_slice":47}],34:[function(require,module,exports){
 var _arrayFromIterator = require('./_arrayFromIterator');
 var _has = require('./_has');
 var identical = require('../identical');
@@ -2301,7 +2407,7 @@ module.exports = function _equals(a, b, stackA, stackB) {
   return true;
 };
 
-},{"../identical":22,"../keys":53,"../type":59,"./_arrayFromIterator":24,"./_has":33}],32:[function(require,module,exports){
+},{"../identical":23,"../keys":59,"../type":67,"./_arrayFromIterator":25,"./_has":36}],35:[function(require,module,exports){
 module.exports = function _filter(fn, list) {
   var idx = 0;
   var len = list.length;
@@ -2316,12 +2422,12 @@ module.exports = function _filter(fn, list) {
   return result;
 };
 
-},{}],33:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 module.exports = function _has(prop, obj) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 };
 
-},{}],34:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 var equals = require('../equals');
 
 
@@ -2380,7 +2486,7 @@ module.exports = function _indexOf(list, a, idx) {
   return -1;
 };
 
-},{"../equals":20}],35:[function(require,module,exports){
+},{"../equals":21}],38:[function(require,module,exports){
 var _has = require('./_has');
 
 
@@ -2391,7 +2497,7 @@ module.exports = (function() {
     function _isArguments(x) { return _has('callee', x); };
 }());
 
-},{"./_has":33}],36:[function(require,module,exports){
+},{"./_has":36}],39:[function(require,module,exports){
 /**
  * Tests whether or not an object is an array.
  *
@@ -2410,24 +2516,24 @@ module.exports = Array.isArray || function _isArray(val) {
           Object.prototype.toString.call(val) === '[object Array]');
 };
 
-},{}],37:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports = function _isObject(x) {
   return Object.prototype.toString.call(x) === '[object Object]';
 };
 
-},{}],38:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports = function _isPlaceholder(a) {
   return a != null &&
          typeof a === 'object' &&
          a['@@functional/placeholder'] === true;
 };
 
-},{}],39:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 module.exports = function _isTransformer(obj) {
   return typeof obj['@@transducer/step'] === 'function';
 };
 
-},{}],40:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 module.exports = function _map(fn, functor) {
   var idx = 0;
   var len = functor.length;
@@ -2439,7 +2545,7 @@ module.exports = function _map(fn, functor) {
   return result;
 };
 
-},{}],41:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 module.exports = function _quote(s) {
   var escaped = s
     .replace(/\\/g, '\\\\')
@@ -2454,7 +2560,7 @@ module.exports = function _quote(s) {
   return '"' + escaped.replace(/"/g, '\\"') + '"';
 };
 
-},{}],42:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 var _xwrap = require('./_xwrap');
 var bind = require('../bind');
 var isArrayLike = require('../isArrayLike');
@@ -2513,7 +2619,16 @@ module.exports = (function() {
   };
 }());
 
-},{"../bind":15,"../isArrayLike":52,"./_xwrap":49}],43:[function(require,module,exports){
+},{"../bind":15,"../isArrayLike":58,"./_xwrap":55}],46:[function(require,module,exports){
+module.exports = function _reduced(x) {
+  return x && x['@@transducer/reduced'] ? x :
+    {
+      '@@transducer/value': x,
+      '@@transducer/reduced': true
+    };
+};
+
+},{}],47:[function(require,module,exports){
 /**
  * An optimized, private array `slice` implementation.
  *
@@ -2547,7 +2662,7 @@ module.exports = function _slice(args, from, to) {
   }
 };
 
-},{}],44:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 /**
  * Polyfill from <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString>.
  */
@@ -2571,7 +2686,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],45:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 var _contains = require('./_contains');
 var _map = require('./_map');
 var _quote = require('./_quote');
@@ -2619,7 +2734,30 @@ module.exports = function _toString(x, seen) {
   }
 };
 
-},{"../keys":53,"../reject":56,"./_contains":26,"./_map":40,"./_quote":41,"./_toISOString":44}],46:[function(require,module,exports){
+},{"../keys":59,"../reject":62,"./_contains":28,"./_map":43,"./_quote":44,"./_toISOString":48}],50:[function(require,module,exports){
+var _curry2 = require('./_curry2');
+var _xfBase = require('./_xfBase');
+
+
+module.exports = (function() {
+  function XDrop(n, xf) {
+    this.xf = xf;
+    this.n = n;
+  }
+  XDrop.prototype['@@transducer/init'] = _xfBase.init;
+  XDrop.prototype['@@transducer/result'] = _xfBase.result;
+  XDrop.prototype['@@transducer/step'] = function(result, input) {
+    if (this.n > 0) {
+      this.n -= 1;
+      return result;
+    }
+    return this.xf['@@transducer/step'](result, input);
+  };
+
+  return _curry2(function _xdrop(n, xf) { return new XDrop(n, xf); });
+}());
+
+},{"./_curry2":30,"./_xfBase":51}],51:[function(require,module,exports){
 module.exports = {
   init: function() {
     return this.xf['@@transducer/init']();
@@ -2629,7 +2767,7 @@ module.exports = {
   }
 };
 
-},{}],47:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 var _curry2 = require('./_curry2');
 var _xfBase = require('./_xfBase');
 
@@ -2648,7 +2786,7 @@ module.exports = (function() {
   return _curry2(function _xfilter(f, xf) { return new XFilter(f, xf); });
 }());
 
-},{"./_curry2":28,"./_xfBase":46}],48:[function(require,module,exports){
+},{"./_curry2":30,"./_xfBase":51}],53:[function(require,module,exports){
 var _curry2 = require('./_curry2');
 var _xfBase = require('./_xfBase');
 
@@ -2667,7 +2805,32 @@ module.exports = (function() {
   return _curry2(function _xmap(f, xf) { return new XMap(f, xf); });
 }());
 
-},{"./_curry2":28,"./_xfBase":46}],49:[function(require,module,exports){
+},{"./_curry2":30,"./_xfBase":51}],54:[function(require,module,exports){
+var _curry2 = require('./_curry2');
+var _reduced = require('./_reduced');
+var _xfBase = require('./_xfBase');
+
+
+module.exports = (function() {
+  function XTake(n, xf) {
+    this.xf = xf;
+    this.n = n;
+  }
+  XTake.prototype['@@transducer/init'] = _xfBase.init;
+  XTake.prototype['@@transducer/result'] = _xfBase.result;
+  XTake.prototype['@@transducer/step'] = function(result, input) {
+    if (this.n === 0) {
+      return _reduced(result);
+    } else {
+      this.n -= 1;
+      return this.xf['@@transducer/step'](result, input);
+    }
+  };
+
+  return _curry2(function _xtake(n, xf) { return new XTake(n, xf); });
+}());
+
+},{"./_curry2":30,"./_reduced":46,"./_xfBase":51}],55:[function(require,module,exports){
 module.exports = (function() {
   function XWrap(fn) {
     this.f = fn;
@@ -2683,7 +2846,7 @@ module.exports = (function() {
   return function _xwrap(fn) { return new XWrap(fn); };
 }());
 
-},{}],50:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 var _slice = require('./internal/_slice');
 var curryN = require('./curryN');
@@ -2724,7 +2887,7 @@ module.exports = _curry2(function invoker(arity, method) {
   });
 });
 
-},{"./curryN":19,"./internal/_curry2":28,"./internal/_slice":43,"./is":51,"./toString":58}],51:[function(require,module,exports){
+},{"./curryN":19,"./internal/_curry2":30,"./internal/_slice":47,"./is":57,"./toString":66}],57:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 
 
@@ -2755,7 +2918,7 @@ module.exports = _curry2(function is(Ctor, val) {
   return val != null && val.constructor === Ctor || val instanceof Ctor;
 });
 
-},{"./internal/_curry2":28}],52:[function(require,module,exports){
+},{"./internal/_curry2":30}],58:[function(require,module,exports){
 var _curry1 = require('./internal/_curry1');
 var _isArray = require('./internal/_isArray');
 
@@ -2792,7 +2955,7 @@ module.exports = _curry1(function isArrayLike(x) {
   return false;
 });
 
-},{"./internal/_curry1":27,"./internal/_isArray":36}],53:[function(require,module,exports){
+},{"./internal/_curry1":29,"./internal/_isArray":39}],59:[function(require,module,exports){
 var _curry1 = require('./internal/_curry1');
 var _has = require('./internal/_has');
 var _isArguments = require('./internal/_isArguments');
@@ -2867,7 +3030,7 @@ module.exports = (function() {
     });
 }());
 
-},{"./internal/_curry1":27,"./internal/_has":33,"./internal/_isArguments":35}],54:[function(require,module,exports){
+},{"./internal/_curry1":29,"./internal/_has":36,"./internal/_isArguments":38}],60:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 var _dispatchable = require('./internal/_dispatchable');
 var _map = require('./internal/_map');
@@ -2925,7 +3088,7 @@ module.exports = _curry2(_dispatchable('map', _xmap, function map(fn, functor) {
   }
 }));
 
-},{"./curryN":19,"./internal/_curry2":28,"./internal/_dispatchable":30,"./internal/_map":40,"./internal/_reduce":42,"./internal/_xmap":48,"./keys":53}],55:[function(require,module,exports){
+},{"./curryN":19,"./internal/_curry2":30,"./internal/_dispatchable":33,"./internal/_map":43,"./internal/_reduce":45,"./internal/_xmap":53,"./keys":59}],61:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 
 
@@ -2972,7 +3135,7 @@ module.exports = _curry2(function nAry(n, fn) {
   }
 });
 
-},{"./internal/_curry2":28}],56:[function(require,module,exports){
+},{"./internal/_curry2":30}],62:[function(require,module,exports){
 var _complement = require('./internal/_complement');
 var _curry2 = require('./internal/_curry2');
 var filter = require('./filter');
@@ -3004,7 +3167,90 @@ module.exports = _curry2(function reject(pred, filterable) {
   return filter(_complement(pred), filterable);
 });
 
-},{"./filter":21,"./internal/_complement":25,"./internal/_curry2":28}],57:[function(require,module,exports){
+},{"./filter":22,"./internal/_complement":27,"./internal/_curry2":30}],63:[function(require,module,exports){
+var _checkForMethod = require('./internal/_checkForMethod');
+var _curry3 = require('./internal/_curry3');
+
+
+/**
+ * Returns the elements of the given list or string (or object with a `slice`
+ * method) from `fromIndex` (inclusive) to `toIndex` (exclusive).
+ *
+ * Dispatches to the `slice` method of the third argument, if present.
+ *
+ * @func
+ * @memberOf R
+ * @since v0.1.4
+ * @category List
+ * @sig Number -> Number -> [a] -> [a]
+ * @sig Number -> Number -> String -> String
+ * @param {Number} fromIndex The start index (inclusive).
+ * @param {Number} toIndex The end index (exclusive).
+ * @param {*} list
+ * @return {*}
+ * @example
+ *
+ *      R.slice(1, 3, ['a', 'b', 'c', 'd']);        //=> ['b', 'c']
+ *      R.slice(1, Infinity, ['a', 'b', 'c', 'd']); //=> ['b', 'c', 'd']
+ *      R.slice(0, -1, ['a', 'b', 'c', 'd']);       //=> ['a', 'b', 'c']
+ *      R.slice(-3, -1, ['a', 'b', 'c', 'd']);      //=> ['b', 'c']
+ *      R.slice(0, 3, 'ramda');                     //=> 'ram'
+ */
+module.exports = _curry3(_checkForMethod('slice', function slice(fromIndex, toIndex, list) {
+  return Array.prototype.slice.call(list, fromIndex, toIndex);
+}));
+
+},{"./internal/_checkForMethod":26,"./internal/_curry3":31}],64:[function(require,module,exports){
+var _curry2 = require('./internal/_curry2');
+var _dispatchable = require('./internal/_dispatchable');
+var _xtake = require('./internal/_xtake');
+var slice = require('./slice');
+
+
+/**
+ * Returns the first `n` elements of the given list, string, or
+ * transducer/transformer (or object with a `take` method).
+ *
+ * Dispatches to the `take` method of the second argument, if present.
+ *
+ * @func
+ * @memberOf R
+ * @since v0.1.0
+ * @category List
+ * @sig Number -> [a] -> [a]
+ * @sig Number -> String -> String
+ * @param {Number} n
+ * @param {*} list
+ * @return {*}
+ * @see R.drop
+ * @example
+ *
+ *      R.take(1, ['foo', 'bar', 'baz']); //=> ['foo']
+ *      R.take(2, ['foo', 'bar', 'baz']); //=> ['foo', 'bar']
+ *      R.take(3, ['foo', 'bar', 'baz']); //=> ['foo', 'bar', 'baz']
+ *      R.take(4, ['foo', 'bar', 'baz']); //=> ['foo', 'bar', 'baz']
+ *      R.take(3, 'ramda');               //=> 'ram'
+ *
+ *      var personnel = [
+ *        'Dave Brubeck',
+ *        'Paul Desmond',
+ *        'Eugene Wright',
+ *        'Joe Morello',
+ *        'Gerry Mulligan',
+ *        'Bob Bates',
+ *        'Joe Dodge',
+ *        'Ron Crotty'
+ *      ];
+ *
+ *      var takeFive = R.take(5);
+ *      takeFive(personnel);
+ *      //=> ['Dave Brubeck', 'Paul Desmond', 'Eugene Wright', 'Joe Morello', 'Gerry Mulligan']
+ */
+module.exports = _curry2(_dispatchable('take', _xtake, function take(n, xs) {
+  return slice(0, n < 0 ? Infinity : n, xs);
+}));
+
+},{"./internal/_curry2":30,"./internal/_dispatchable":33,"./internal/_xtake":54,"./slice":63}],65:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 
 
@@ -3043,7 +3289,7 @@ module.exports = _curry2(function times(fn, n) {
   return list;
 });
 
-},{"./internal/_curry2":28}],58:[function(require,module,exports){
+},{"./internal/_curry2":30}],66:[function(require,module,exports){
 var _curry1 = require('./internal/_curry1');
 var _toString = require('./internal/_toString');
 
@@ -3086,7 +3332,7 @@ var _toString = require('./internal/_toString');
  */
 module.exports = _curry1(function toString(val) { return _toString(val, []); });
 
-},{"./internal/_curry1":27,"./internal/_toString":45}],59:[function(require,module,exports){
+},{"./internal/_curry1":29,"./internal/_toString":49}],67:[function(require,module,exports){
 var _curry1 = require('./internal/_curry1');
 
 
@@ -3119,4 +3365,4 @@ module.exports = _curry1(function type(val) {
          Object.prototype.toString.call(val).slice(8, -1);
 });
 
-},{"./internal/_curry1":27}]},{},[1])
+},{"./internal/_curry1":29}]},{},[1])
