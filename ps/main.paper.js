@@ -164,11 +164,11 @@ var Timer = Group.extend({
     this.duration = milliseconds;
     this.startPosition = position;
 
-    var circle = new Shape.Circle(position, 54 / 2 + 2);
-        circle.strokeColor = 'black';
-        circle.strokeWidth = 2;
+    this.circle = new Shape.Circle(position, 54 / 2 + 2);
+    this.circle.strokeColor = 'black';
+    this.circle.strokeWidth = 2;
 
-    Group.prototype.initialize.call(this, [circle]);
+    Group.prototype.initialize.call(this, [this.circle]);
   },
 
   drawSlice: function (center, radius, angle, percentage) {
@@ -200,21 +200,24 @@ var Timer = Group.extend({
 
       if (typeof this.slice !== "undefined") this.slice.remove();
 
-      this.slice = this.drawSlice(this.position, 26, -90, percentage)
-      this.addChild(this.slice);
-
       if (percentage >= 0.7) {
         this.position = this.startPosition + Point.random() * 2;
       }
 
-      if (percentage >= 1) this.end();
+      if (percentage >= 1) {
+        this.end();
+        this.circle.fillColor = 'black';
+      } else {
+        this.slice = this.drawSlice(this.position, 29, -90, percentage)
+        this.addChild(this.slice);
+      }
     });
   },
 
   end: function () {
     this.off("frame");
     this.emit("ended");
-    this.position = this.startPosition
+    this.position = this.startPosition;
   }
 });
 
