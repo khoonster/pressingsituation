@@ -1,5 +1,10 @@
 'use strict';
 
+var TIMEOUT = 60000;
+var COLUMNS = 18;
+var ROWS = 9;
+var CELLS = COLUMNS * ROWS;
+
 var times = require('ramda/src/times');
 var construct = require('ramda/src/construct');
 var invoker = require('ramda/src/invoker');
@@ -16,9 +21,9 @@ var Timer = require('./modules/timer.js');
 var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js');
 
 var cursor = new Cursor();
-var timer = new Timer(view.bounds.center - new Point(0, 324), 60000);
+var timer = new Timer(view.bounds.center - new Point(0, 324), TIMEOUT);
 
-var losers = times(construct(LosingButton, view.bounds.center), 287);
+var losers = times(construct(LosingButton, view.bounds.center), CELLS - 1);
 var winner = new WinningButton(view.bounds.center);
 var buttons = losers.concat([winner]);
 
@@ -33,8 +38,8 @@ timer.on('ended', function () {
 });
 
 var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
-  columns: 24,
-  rows: 12,
+  columns: COLUMNS,
+  rows: ROWS,
   cellSize: new Size(58, 58)
 })
 
