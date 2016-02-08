@@ -21,7 +21,7 @@ var losers = times(construct(LosingButton, view.bounds.center), 287);
 var winner = new WinningButton(view.bounds.center);
 var buttons = losers.concat([winner]);
 
-winner.on('click', function () {
+winner.on('mouseup', function () {
   map(invoker(0, 'disable'), losers);
   timer.stop();
 });
@@ -86,7 +86,7 @@ var Button = Group.extend({
 
     Group.prototype.initialize.call(this, [this.bottom, this.sides, this.top]);
 
-    this.top.on('click', function () {
+    this.top.on('mouseup', function () {
       that.press();
     });
 

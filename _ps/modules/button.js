@@ -26,7 +26,7 @@ var Button = Group.extend({
 
     Group.prototype.initialize.call(this, [this.bottom, this.sides, this.top]);
 
-    this.top.on('click', function () {
+    this.top.on('mouseup', function () {
       that.press();
     });
 

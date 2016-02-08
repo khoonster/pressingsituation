@@ -20,7 +20,7 @@ var losers = times(construct(LosingButton, view.bounds.center), 287);
 var winner = new WinningButton(view.bounds.center);
 var buttons = losers.concat([winner]);
 
-winner.on('click', function () {
+winner.on('mouseup', function () {
   map(invoker(0, 'disable'), losers);
   timer.stop();
 });
