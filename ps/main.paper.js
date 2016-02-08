@@ -29,7 +29,7 @@ var winner = new WinningButton(view.bounds.center);
 var buttons = losers.concat([winner]);
 
 winner.on('mouseup', function () {
-  map(invoker(0, 'disable'), losers);
+  map(invoker(0, 'deactivate'), losers);
   timer.stop();
 });
 
@@ -44,7 +44,11 @@ var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
   cellSize: new Size(58, 58)
 })
 
-var gamefield = new Group([grid, timer, cursor]);
+var explosions = new Group();
+explosions.name = 'explosions';
+
+var gamefield = new Group([grid, timer, explosions, cursor]);
+gamefield.name = 'gamefield';
 
 view.onMouseMove = function (event) {
   cursor.moveTo(event.point);
@@ -210,14 +214,20 @@ explosions.visible = false;
 
 var LosingButton = Button.extend({
   doClick: function () {
-    var explosion = shuffle(explosions.children)[0].clone(true);
+    this.explosion = shuffle(explosions.children)[0].clone(true);
 
-    this.parent.addChild(explosion);
-    explosion.position = this.position;
+    this.parent.addChild(this.explosion);
+    this.explosion.position = this.position;
 
-    explosion.on('mousedrag', function (event) {
+    this.explosion.on('mousedrag', function (event) {
       this.position += event.delta;
     })
+  },
+
+  deactivate: function () {
+    this.disable();
+
+    if (typeof this.explosion !== "undefined") this.explosion.remove();
   }
 });
 

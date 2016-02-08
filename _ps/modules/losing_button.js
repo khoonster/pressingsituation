@@ -8,14 +8,20 @@ explosions.visible = false;
 
 var LosingButton = Button.extend({
   doClick: function () {
-    var explosion = shuffle(explosions.children)[0].clone(true);
+    this.explosion = shuffle(explosions.children)[0].clone(true);
 
-    this.parent.addChild(explosion);
-    explosion.position = this.position;
+    this.parent.addChild(this.explosion);
+    this.explosion.position = this.position;
 
-    explosion.on('mousedrag', function (event) {
+    this.explosion.on('mousedrag', function (event) {
       this.position += event.delta;
     })
+  },
+
+  deactivate: function () {
+    this.disable();
+
+    if (typeof this.explosion !== "undefined") this.explosion.remove();
   }
 });
 
