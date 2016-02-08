@@ -36,8 +36,6 @@ hijackViewMousePosition(view, function (event) {
   return new Point(xWiggle, yWiggle);
 });
 
-console.log(timer);
-
 timer.start();
 
 },{"./modules/button.js":2,"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5,"./modules/timer.js":6,"ramda/src/construct":7,"ramda/src/times":17}],2:[function(require,module,exports){

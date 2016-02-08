@@ -35,6 +35,4 @@ hijackViewMousePosition(view, function (event) {
   return new Point(xWiggle, yWiggle);
 });
 
-console.log(timer);
-
 timer.start();
