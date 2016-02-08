@@ -17,15 +17,18 @@ var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js')
 var cursor = new Cursor();
 var timer = new Timer(view.bounds.center - new Point(0, 324), 60000);
 
-var buttons = times(construct(LosingButton, view.bounds.center), 287);
+var losers = times(construct(LosingButton, view.bounds.center), 287);
 var winner = new WinningButton(view.bounds.center);
+var buttons = losers.concat([winner]);
 
 winner.on('click', function () {
-  map(invoker(0, 'press'), buttons);
-  timer.end();
+  map(invoker(0, 'disable'), losers);
+  timer.stop();
 });
 
-buttons.push(winner);
+timer.on('ended', function () {
+  map(invoker(0, 'press'), losers);
+});
 
 var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
   columns: 24,
@@ -33,7 +36,7 @@ var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
   cellSize: new Size(58, 58)
 })
 
-var gamefield = new Group([grid, cursor, timer]);
+var gamefield = new Group([grid, timer, cursor]);
 
 view.onMouseMove = function (event) {
   cursor.moveTo(event.point);
@@ -85,7 +88,6 @@ var Button = Group.extend({
 
     this.top.on('click', function () {
       that.press();
-      that.doClick();
     });
 
     this.position = point;
@@ -94,6 +96,11 @@ var Button = Group.extend({
   doClick: function () {},
 
   press: function () {
+    this.doClick();
+    this.disable();
+  },
+
+  disable: function () {
     this.top.visible = false;
     this.sides.visible = false;
   }
@@ -193,12 +200,11 @@ var Button = require('./button.js');
 
 var explosionSVG = document.getElementById('explosions');
 var explosions = project.importSVG(explosionSVG);
+explosions.visible = false;
 
 var LosingButton = Button.extend({
   doClick: function () {
     var explosion = shuffle(explosions.children)[0].clone(true);
-
-    explosions.remove();
 
     this.parent.addChild(explosion);
     explosion.position = this.position;
@@ -230,9 +236,9 @@ var Timer = Group.extend({
       this.running = true;
     });
 
-    this.on("ended", function () {
+    this.on("stopped", function () {
       this.running = false;
-    })
+    });
   },
 
   drawSlice: function (center, radius, angle, percentage) {
@@ -279,8 +285,13 @@ var Timer = Group.extend({
   },
 
   end: function () {
-    this.off("frame");
     this.emit("ended");
+    this.stop();
+  },
+
+  stop: function () {
+    this.off("frame");
+    this.emit("stopped");
     this.position = this.startPosition;
   }
 });

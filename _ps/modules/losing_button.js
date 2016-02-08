@@ -4,12 +4,11 @@ var Button = require('./button.js');
 
 var explosionSVG = document.getElementById('explosions');
 var explosions = project.importSVG(explosionSVG);
+explosions.visible = false;
 
 var LosingButton = Button.extend({
   doClick: function () {
     var explosion = shuffle(explosions.children)[0].clone(true);
-
-    explosions.remove();
 
     this.parent.addChild(explosion);
     explosion.position = this.position;

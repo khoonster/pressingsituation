@@ -16,15 +16,18 @@ var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js')
 var cursor = new Cursor();
 var timer = new Timer(view.bounds.center - new Point(0, 324), 60000);
 
-var buttons = times(construct(LosingButton, view.bounds.center), 287);
+var losers = times(construct(LosingButton, view.bounds.center), 287);
 var winner = new WinningButton(view.bounds.center);
+var buttons = losers.concat([winner]);
 
 winner.on('click', function () {
-  map(invoker(0, 'press'), buttons);
-  timer.end();
+  map(invoker(0, 'disable'), losers);
+  timer.stop();
 });
 
-buttons.push(winner);
+timer.on('ended', function () {
+  map(invoker(0, 'press'), losers);
+});
 
 var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
   columns: 24,
@@ -32,7 +35,7 @@ var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
   cellSize: new Size(58, 58)
 })
 
-var gamefield = new Group([grid, cursor, timer]);
+var gamefield = new Group([grid, timer, cursor]);
 
 view.onMouseMove = function (event) {
   cursor.moveTo(event.point);

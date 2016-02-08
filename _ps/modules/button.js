@@ -28,7 +28,6 @@ var Button = Group.extend({
 
     this.top.on('click', function () {
       that.press();
-      that.doClick();
     });
 
     this.position = point;
@@ -37,6 +36,11 @@ var Button = Group.extend({
   doClick: function () {},
 
   press: function () {
+    this.doClick();
+    this.disable();
+  },
+
+  disable: function () {
     this.top.visible = false;
     this.sides.visible = false;
   }

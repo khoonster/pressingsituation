@@ -16,9 +16,9 @@ var Timer = Group.extend({
       this.running = true;
     });
 
-    this.on("ended", function () {
+    this.on("stopped", function () {
       this.running = false;
-    })
+    });
   },
 
   drawSlice: function (center, radius, angle, percentage) {
@@ -65,8 +65,13 @@ var Timer = Group.extend({
   },
 
   end: function () {
-    this.off("frame");
     this.emit("ended");
+    this.stop();
+  },
+
+  stop: function () {
+    this.off("frame");
+    this.emit("stopped");
     this.position = this.startPosition;
   }
 });
