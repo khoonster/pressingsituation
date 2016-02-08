@@ -1,8 +1,8 @@
 'use strict';
 
 var TIMEOUT = 60000;
-var COLUMNS = 18;
-var ROWS = 9;
+var COLUMNS = 24;
+var ROWS = 12;
 var CELLS = COLUMNS * ROWS;
 
 var times = require('ramda/src/times');
@@ -33,8 +33,9 @@ winner.on('mouseup', function () {
 });
 
 timer.on('ended', function () {
-  map(invoker(0, 'press'), take(100, losers));
-  map(invoker(0, 'disable'), drop(100, losers));
+  map(invoker(0, 'press'), take(125, losers));
+  map(invoker(0, 'disable'), drop(125, losers));
+  winner.press();
 });
 
 var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
