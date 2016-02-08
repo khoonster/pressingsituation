@@ -227,6 +227,7 @@ var Timer = Group.extend({
     this.startPosition = position;
 
     this.circle = new Shape.Circle(position, 54 / 2 + 2);
+    this.circle.fillColor = 'white';
     this.circle.strokeColor = 'black';
     this.circle.strokeWidth = 2;
 
