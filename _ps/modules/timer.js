@@ -2,6 +2,7 @@ var Timer = Group.extend({
   initialize: function (position, milliseconds) {
     this.startTime = (new Date()).getTime();
     this.duration = milliseconds;
+    this.startPosition = position;
 
     var circle = new Shape.Circle(position, 54 / 2 + 2);
         circle.strokeColor = 'black';
@@ -37,17 +38,23 @@ var Timer = Group.extend({
     this.on("frame", function () {
       var percentage = this.elapsedPercentage();
 
-      if (percentage >= 1) return this.end();
       if (typeof this.slice !== "undefined") this.slice.remove();
 
       this.slice = this.drawSlice(this.position, 26, -90, percentage)
       this.addChild(this.slice);
+
+      if (percentage >= 0.7) {
+        this.position = this.startPosition + Point.random() * 2;
+      }
+
+      if (percentage >= 1) this.end();
     });
   },
 
   end: function () {
     this.off("frame");
     this.emit("ended");
+    this.position = this.startPosition
   }
 });
 
