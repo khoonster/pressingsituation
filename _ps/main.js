@@ -51,12 +51,7 @@ view.onMouseMove = function (event) {
 
 hijackViewMousePosition(view, function (event) {
   if (timer.running) {
-    var wiggleLength = 7;
-    var wiggleSpeed = wiggleLength;
-    var xWiggle = Math.sin((2 * Math.PI / wiggleSpeed) * event.count) * wiggleLength;
-    var yWiggle = Math.sin((2 * Math.PI / wiggleSpeed) * event.count) * wiggleLength / 4;
-
-    return new Point(xWiggle, yWiggle);
+    return Point.random() * 3;
   } else {
     return new Point(0, 0);
   }
