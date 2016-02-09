@@ -39,8 +39,6 @@ var topSymbol = new S(top);
 var Button = Group.extend({
 
   initialize: function (point) {
-    var that = this;
-
     this.top = topSymbol.place(size / 2);
     this.rightSide = rightSideSymbol.place((size + depth) / 2);
     this.bottomSide = bottomSideSymbol.place((size + depth) / 2);
@@ -48,10 +46,8 @@ var Button = Group.extend({
 
     Group.prototype.initialize.call(this, [this.bottom, this.bottomSide, this.rightSide, this.top]);
 
-    // console.log(this.rightSide.position);
-
     this.top.on('mouseup', function () {
-      that.press();
+      this.parent.press();
     });
 
     this.position = point;

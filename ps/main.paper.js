@@ -6,7 +6,7 @@ var COLUMNS = 24;
 var ROWS = 12;
 var CELLS = COLUMNS * ROWS;
 
-var construct       = require('ramda/src/construct');
+var constructN      = require('ramda/src/constructN');
 var drop            = require('ramda/src/drop');
 var invoker         = require('ramda/src/invoker');
 var map             = require('ramda/src/map');
@@ -17,6 +17,7 @@ var times           = require('ramda/src/times');
 var Cursor          = require('./modules/cursor.js');
 var Grid            = require('./modules/grid.js');
 var LosingButton    = require('./modules/losing_button.js');
+var Minefield       = require('./modules/minefield.js');
 var Timer           = require('./modules/timer.js');
 var WinningButton   = require('./modules/winning_button.js');
 
@@ -25,7 +26,11 @@ var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js')
 var cursor = new Cursor();
 var timer = new Timer(view.bounds.center, TIMEOUT);
 
-var losers = times(construct(LosingButton, view.bounds.center), CELLS - 1);
+var minefield = new Minefield();
+
+var losers = times(function () {
+  return new LosingButton(view.bounds.center, minefield)
+}, CELLS - 1);
 var winner = new WinningButton(view.bounds.center);
 var buttons = losers.concat([winner]);
 
@@ -35,7 +40,7 @@ var grid = new Grid(view.bounds.center, shuffle(buttons), {
   cellSize: new Size(58, 58)
 })
 
-var gamefield = new Group([grid, timer, cursor]);
+var gamefield = new Group([grid, minefield, timer, cursor]);
 
 winner.on('mouseup', function () {
   map(invoker(0, 'deactivate'), losers);
@@ -59,11 +64,19 @@ view.on('resize', function (event) {
 
   var scale = Math.min(widthScale, heightScale);
 
-  cursor.scale(scale)
-  grid.scale(scale);
-  grid.position = view.bounds.bottomCenter - new Point(0, grid.bounds.height / 2 + 20);
+  var currentGridPosition = new Point(grid.position);
 
+  cursor.scale(scale);
+  grid.scale(scale);
+
+  var newGridPosition = view.bounds.bottomCenter - new Point(0, grid.bounds.height / 2 + 20);
+  var gridPositionDelta = currentGridPosition - newGridPosition;
   var headerSize = view.size - (grid.bounds.size + padding);
+
+  grid.position = newGridPosition;
+
+  minefield.position -= gridPositionDelta;
+  minefield.scale(scale, grid.position);
 
   timer.position = new Point(view.center.x, headerSize.height / 2 + padding.height / 4)
 });
@@ -82,7 +95,7 @@ hijackViewMousePosition(view, function (event) {
 
 timer.start();
 
-},{"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5,"./modules/losing_button.js":6,"./modules/timer.js":7,"./modules/winning_button.js":8,"lodash.shuffle":9,"ramda/src/construct":16,"ramda/src/drop":20,"ramda/src/invoker":56,"ramda/src/map":60,"ramda/src/take":64,"ramda/src/times":65}],2:[function(require,module,exports){
+},{"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5,"./modules/losing_button.js":6,"./modules/minefield.js":7,"./modules/timer.js":8,"./modules/winning_button.js":9,"lodash.shuffle":10,"ramda/src/constructN":17,"ramda/src/drop":20,"ramda/src/invoker":56,"ramda/src/map":60,"ramda/src/take":64,"ramda/src/times":65}],2:[function(require,module,exports){
 var S = paper.Symbol;
 
 var topColor = '#ff4600';
@@ -124,8 +137,6 @@ var topSymbol = new S(top);
 var Button = Group.extend({
 
   initialize: function (point) {
-    var that = this;
-
     this.top = topSymbol.place(size / 2);
     this.rightSide = rightSideSymbol.place((size + depth) / 2);
     this.bottomSide = bottomSideSymbol.place((size + depth) / 2);
@@ -133,10 +144,8 @@ var Button = Group.extend({
 
     Group.prototype.initialize.call(this, [this.bottom, this.bottomSide, this.rightSide, this.top]);
 
-    // console.log(this.rightSide.position);
-
     this.top.on('mouseup', function () {
-      that.press();
+      this.parent.press();
     });
 
     this.position = point;
@@ -248,21 +257,17 @@ module.exports = function hijackViewMousePosition(view, offsetFn) {
 }
 
 },{}],6:[function(require,module,exports){
-var constructN = require('ramda/src/constructN');
-var map = require('ramda/src/map');
-var shuffle = require('lodash.shuffle');
-
 var Button = require('./button.js');
 
-var explosionSVG = document.getElementById('explosions');
-var explosionGroup = project.importSVG(explosionSVG);
-var explosions = map(constructN(1, paper.Symbol))(explosionGroup.children.slice());
-
 var LosingButton = Button.extend({
-  doClick: function () {
-    this.explosion = shuffle(explosions)[0].place(this.position);
+  initialize: function (position, minefield) {
+    Button.prototype.initialize.call(this, position);
 
-    this.parent.addChild(this.explosion);
+    this.minefield = minefield;
+  },
+
+  doClick: function () {
+    this.explosion = this.minefield.explode(this.position);
 
     this.explosion.on('mousedrag', function (event) {
       this.position += event.delta;
@@ -278,7 +283,44 @@ var LosingButton = Button.extend({
 
 module.exports = LosingButton;
 
-},{"./button.js":2,"lodash.shuffle":9,"ramda/src/constructN":17,"ramda/src/map":60}],7:[function(require,module,exports){
+},{"./button.js":2}],7:[function(require,module,exports){
+var constructN = require('ramda/src/constructN');
+var map = require('ramda/src/map');
+var shuffle = require('lodash.shuffle');
+
+var explosionSVG = document.getElementById('explosions');
+var explosionGroup = project.importSVG(explosionSVG);
+var explosions = map(constructN(1, paper.Symbol))(explosionGroup.children.slice());
+
+var Minefield = Group.extend({
+  initialize: function () {
+    Group.prototype.initialize.apply(this, arguments);
+
+    this.currentScale = 1;
+  },
+
+  explode: function (position) {
+    var explosion = shuffle(explosions)[0].place(position);
+
+    explosion.scale(this.currentScale);
+
+    this.addChild(explosion);
+
+    return explosion;
+  },
+
+  scale: function (amount) {
+    Group.prototype.scale.apply(this, arguments);
+
+    this.currentScale = this.currentScale * amount;
+
+    console.log(this.currentScale);
+  }
+});
+
+module.exports = Minefield;
+
+},{"lodash.shuffle":10,"ramda/src/constructN":17,"ramda/src/map":60}],8:[function(require,module,exports){
 var Timer = Group.extend({
   initialize: function (position, milliseconds) {
     this.running = false;
@@ -364,7 +406,7 @@ var Timer = Group.extend({
 
 module.exports = Timer;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var Button = require('./button.js');
 
 var WinningButton = Button.extend({
@@ -373,7 +415,7 @@ var WinningButton = Button.extend({
 
 module.exports = WinningButton;
 
-},{"./button.js":2}],9:[function(require,module,exports){
+},{"./button.js":2}],10:[function(require,module,exports){
 /**
  * lodash 4.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -407,7 +449,7 @@ function shuffle(collection) {
 
 module.exports = shuffle;
 
-},{"lodash.samplesize":10}],10:[function(require,module,exports){
+},{"lodash.samplesize":11}],11:[function(require,module,exports){
 /**
  * lodash 4.0.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -653,7 +695,7 @@ function toNumber(value) {
 
 module.exports = sampleSize;
 
-},{"lodash.toarray":11}],11:[function(require,module,exports){
+},{"lodash.toarray":12}],12:[function(require,module,exports){
 /**
  * lodash 4.1.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -1205,7 +1247,7 @@ function values(object) {
 
 module.exports = toArray;
 
-},{"lodash._arraymap":12,"lodash._root":13,"lodash.keys":14}],12:[function(require,module,exports){
+},{"lodash._arraymap":13,"lodash._root":14,"lodash.keys":15}],13:[function(require,module,exports){
 /**
  * lodash 3.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -1237,7 +1279,7 @@ function arrayMap(array, iteratee) {
 
 module.exports = arrayMap;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function (global){
 /**
  * lodash 3.0.0 (Custom Build) <https://lodash.com/>
@@ -1294,7 +1336,7 @@ function checkGlobal(value) {
 module.exports = root;
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /**
  * lodash 4.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -1735,7 +1777,7 @@ function keys(object) {
 
 module.exports = keys;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var _arity = require('./internal/_arity');
 var _curry2 = require('./internal/_curry2');
 
@@ -1762,41 +1804,7 @@ module.exports = _curry2(function bind(fn, thisObj) {
   });
 });
 
-},{"./internal/_arity":24,"./internal/_curry2":30}],16:[function(require,module,exports){
-var _curry1 = require('./internal/_curry1');
-var constructN = require('./constructN');
-
-
-/**
- * Wraps a constructor function inside a curried function that can be called
- * with the same arguments and returns the same type.
- *
- * @func
- * @memberOf R
- * @since v0.1.0
- * @category Function
- * @sig (* -> {*}) -> (* -> {*})
- * @param {Function} Fn The constructor function to wrap.
- * @return {Function} A wrapped, curried constructor function.
- * @example
- *
- *      // Constructor function
- *      var Widget = config => {
- *        // ...
- *      };
- *      Widget.prototype = {
- *        // ...
- *      };
- *      var allConfigs = [
- *        // ...
- *      ];
- *      R.map(R.construct(Widget), allConfigs); // a list of Widgets
- */
-module.exports = _curry1(function construct(Fn) {
-  return constructN(Fn.length, Fn);
-});
-
-},{"./constructN":17,"./internal/_curry1":29}],17:[function(require,module,exports){
+},{"./internal/_arity":24,"./internal/_curry2":30}],17:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 var curry = require('./curry');
 var nAry = require('./nAry');
@@ -2681,7 +2689,7 @@ module.exports = (function() {
   };
 }());
 
-},{"../bind":15,"../isArrayLike":58,"./_xwrap":55}],46:[function(require,module,exports){
+},{"../bind":16,"../isArrayLike":58,"./_xwrap":55}],46:[function(require,module,exports){
 module.exports = function _reduced(x) {
   return x && x['@@transducer/reduced'] ? x :
     {

@@ -5,7 +5,7 @@ var COLUMNS = 24;
 var ROWS = 12;
 var CELLS = COLUMNS * ROWS;
 
-var construct       = require('ramda/src/construct');
+var constructN      = require('ramda/src/constructN');
 var drop            = require('ramda/src/drop');
 var invoker         = require('ramda/src/invoker');
 var map             = require('ramda/src/map');
@@ -16,6 +16,7 @@ var times           = require('ramda/src/times');
 var Cursor          = require('./modules/cursor.js');
 var Grid            = require('./modules/grid.js');
 var LosingButton    = require('./modules/losing_button.js');
+var Minefield       = require('./modules/minefield.js');
 var Timer           = require('./modules/timer.js');
 var WinningButton   = require('./modules/winning_button.js');
 
@@ -24,7 +25,11 @@ var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js')
 var cursor = new Cursor();
 var timer = new Timer(view.bounds.center, TIMEOUT);
 
-var losers = times(construct(LosingButton, view.bounds.center), CELLS - 1);
+var minefield = new Minefield();
+
+var losers = times(function () {
+  return new LosingButton(view.bounds.center, minefield)
+}, CELLS - 1);
 var winner = new WinningButton(view.bounds.center);
 var buttons = losers.concat([winner]);
 
@@ -34,7 +39,7 @@ var grid = new Grid(view.bounds.center, shuffle(buttons), {
   cellSize: new Size(58, 58)
 })
 
-var gamefield = new Group([grid, timer, cursor]);
+var gamefield = new Group([grid, minefield, timer, cursor]);
 
 winner.on('mouseup', function () {
   map(invoker(0, 'deactivate'), losers);
@@ -58,11 +63,19 @@ view.on('resize', function (event) {
 
   var scale = Math.min(widthScale, heightScale);
 
-  cursor.scale(scale)
-  grid.scale(scale);
-  grid.position = view.bounds.bottomCenter - new Point(0, grid.bounds.height / 2 + 20);
+  var currentGridPosition = new Point(grid.position);
 
+  cursor.scale(scale);
+  grid.scale(scale);
+
+  var newGridPosition = view.bounds.bottomCenter - new Point(0, grid.bounds.height / 2 + 20);
+  var gridPositionDelta = currentGridPosition - newGridPosition;
   var headerSize = view.size - (grid.bounds.size + padding);
+
+  grid.position = newGridPosition;
+
+  minefield.position -= gridPositionDelta;
+  minefield.scale(scale, grid.position);
 
   timer.position = new Point(view.center.x, headerSize.height / 2 + padding.height / 4)
 });

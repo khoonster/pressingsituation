@@ -1,18 +1,14 @@
-var constructN = require('ramda/src/constructN');
-var map = require('ramda/src/map');
-var shuffle = require('lodash.shuffle');
-
 var Button = require('./button.js');
 
-var explosionSVG = document.getElementById('explosions');
-var explosionGroup = project.importSVG(explosionSVG);
-var explosions = map(constructN(1, paper.Symbol))(explosionGroup.children.slice());
-
 var LosingButton = Button.extend({
-  doClick: function () {
-    this.explosion = shuffle(explosions)[0].place(this.position);
+  initialize: function (position, minefield) {
+    Button.prototype.initialize.call(this, position);
 
-    this.parent.addChild(this.explosion);
+    this.minefield = minefield;
+  },
+
+  doClick: function () {
+    this.explosion = this.minefield.explode(this.position);
 
     this.explosion.on('mousedrag', function (event) {
       this.position += event.delta;
