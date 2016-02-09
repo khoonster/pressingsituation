@@ -1,6 +1,6 @@
 'use strict';
 
-var TIMEOUT = 6000;
+var TIMEOUT = 60000;
 var COLUMNS = 24;
 var ROWS = 12;
 var CELLS = COLUMNS * ROWS;
