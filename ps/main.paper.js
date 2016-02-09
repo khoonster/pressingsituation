@@ -6,19 +6,20 @@ var COLUMNS = 24;
 var ROWS = 12;
 var CELLS = COLUMNS * ROWS;
 
-var times = require('ramda/src/times');
-var construct = require('ramda/src/construct');
-var invoker = require('ramda/src/invoker');
-var map = require('ramda/src/map');
-var drop = require('ramda/src/drop');
-var take = require('ramda/src/take');
-var shuffle = require('lodash.shuffle');
+var construct       = require('ramda/src/construct');
+var drop            = require('ramda/src/drop');
+var invoker         = require('ramda/src/invoker');
+var map             = require('ramda/src/map');
+var shuffle         = require('lodash.shuffle');
+var take            = require('ramda/src/take');
+var times           = require('ramda/src/times');
 
-var LosingButton = require('./modules/losing_button.js');
-var WinningButton = require('./modules/winning_button.js');
-var Cursor = require('./modules/cursor.js');
-var Grid = require('./modules/grid.js');
-var Timer = require('./modules/timer.js');
+var Cursor          = require('./modules/cursor.js');
+var Grid            = require('./modules/grid.js');
+var LosingButton    = require('./modules/losing_button.js');
+var Timer           = require('./modules/timer.js');
+var WinningButton   = require('./modules/winning_button.js');
+
 var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js');
 
 var cursor = new Cursor();
@@ -27,6 +28,14 @@ var timer = new Timer(view.bounds.center - new Point(0, 324), TIMEOUT);
 var losers = times(construct(LosingButton, view.bounds.center), CELLS - 1);
 var winner = new WinningButton(view.bounds.center);
 var buttons = losers.concat([winner]);
+
+var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
+  columns: COLUMNS,
+  rows: ROWS,
+  cellSize: new Size(58, 58)
+})
+
+var gamefield = new Group([grid, timer, cursor]);
 
 winner.on('mouseup', function () {
   map(invoker(0, 'deactivate'), losers);
@@ -38,14 +47,6 @@ timer.on('ended', function () {
   map(invoker(0, 'disable'), drop(125, losers));
   winner.press();
 });
-
-var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
-  columns: COLUMNS,
-  rows: ROWS,
-  cellSize: new Size(58, 58)
-})
-
-var gamefield = new Group([grid, timer, cursor]);
 
 view.on('resize', function (event) {
   var padding = new Size(40, 40);
@@ -67,9 +68,9 @@ view.on('resize', function (event) {
   timer.position = new Point(view.center.x, headerSize.height / 2 + padding.height / 4)
 });
 
-view.onMouseMove = function (event) {
+view.on('mousemove', function (event) {
   cursor.moveTo(event.point);
-}
+});
 
 hijackViewMousePosition(view, function (event) {
   if (timer.running) {
