@@ -47,6 +47,26 @@ var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
 
 var gamefield = new Group([grid, timer, cursor]);
 
+view.on('resize', function (event) {
+  var padding = new Size(40, 40);
+
+  var gridSize = grid.bounds;
+  var windowSize = event.size;
+  var maxGridSize = windowSize - new Size(padding.height, 120);
+  var widthScale = maxGridSize.width / gridSize.width;
+  var heightScale = maxGridSize.height / gridSize.height;
+
+  var scale = Math.min(widthScale, heightScale);
+
+  cursor.scale(scale)
+  grid.scale(scale);
+  grid.position = view.bounds.bottomCenter - new Point(0, grid.bounds.height / 2 + 20);
+
+  var headerSize = view.size - (grid.bounds.size + padding);
+
+  timer.position = new Point(view.center.x, headerSize.height / 2 + padding.height / 4)
+});
+
 view.onMouseMove = function (event) {
   cursor.moveTo(event.point);
 }
@@ -205,20 +225,21 @@ module.exports = function hijackViewMousePosition(view, offsetFn) {
 }
 
 },{}],6:[function(require,module,exports){
+var constructN = require('ramda/src/constructN');
+var map = require('ramda/src/map');
 var shuffle = require('lodash.shuffle');
 
 var Button = require('./button.js');
 
 var explosionSVG = document.getElementById('explosions');
-var explosions = project.importSVG(explosionSVG);
-explosions.visible = false;
+var explosionGroup = project.importSVG(explosionSVG);
+var explosions = map(constructN(1, paper.Symbol))(explosionGroup.children.slice());
 
 var LosingButton = Button.extend({
   doClick: function () {
-    this.explosion = shuffle(explosions.children)[0].clone(true);
+    this.explosion = shuffle(explosions)[0].place(this.position);
 
     this.parent.addChild(this.explosion);
-    this.explosion.position = this.position;
 
     this.explosion.on('mousedrag', function (event) {
       this.position += event.delta;
@@ -234,19 +255,21 @@ var LosingButton = Button.extend({
 
 module.exports = LosingButton;
 
-},{"./button.js":2,"lodash.shuffle":9}],7:[function(require,module,exports){
+},{"./button.js":2,"lodash.shuffle":9,"ramda/src/constructN":17,"ramda/src/map":60}],7:[function(require,module,exports){
 var Timer = Group.extend({
   initialize: function (position, milliseconds) {
     this.running = false;
 
     this.startTime = (new Date()).getTime();
     this.duration = milliseconds;
-    this.startPosition = position;
 
-    this.circle = new Shape.Circle(position, 54 / 2 + 2);
+    this.circle = new Shape.Circle(new Point(0, 0), 54 / 2 + 2);
     this.circle.fillColor = 'white';
     this.circle.strokeColor = 'black';
     this.circle.strokeWidth = 2;
+
+    this.jitter = new Point(0, 0);
+    this.jitterPercentageStart = 0.6;
 
     Group.prototype.initialize.call(this, [this.circle]);
 
@@ -261,8 +284,8 @@ var Timer = Group.extend({
 
   drawSlice: function (center, radius, angle, percentage) {
     var circumfrence = 360 * percentage;
-    var from = new Point({ angle: angle, length:radius });
-    var through = center + new Point({ angle: angle + circumfrence/2, length: radius });
+    var from = new Point({ angle: angle, length: radius });
+    var through = center + new Point({ angle: angle + circumfrence / 2, length: radius });
     var to = center + new Point({ angle: angle + circumfrence, length: radius });
     var path = new Path();
         path.add(center);
@@ -288,8 +311,10 @@ var Timer = Group.extend({
 
       if (typeof this.slice !== "undefined") this.slice.remove();
 
-      if (percentage >= 0.7) {
-        this.position = this.startPosition + Point.random() * 2;
+      if (percentage >= this.jitterPercentageStart) {
+        this.position -= this.jitter;
+        this.jitter = Point.random() * (Math.max(percentage - this.jitterPercentageStart, 0) * 20);
+        this.position += this.jitter;
       }
 
       if (percentage >= 1) {
@@ -310,7 +335,11 @@ var Timer = Group.extend({
   stop: function () {
     this.off("frame");
     this.emit("stopped");
-    this.position = this.startPosition;
+    this.position -= this.jitter;
+  },
+
+  setPosition: function () {
+    console.log('foo');
   }
 });
 

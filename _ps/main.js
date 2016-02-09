@@ -46,6 +46,26 @@ var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
 
 var gamefield = new Group([grid, timer, cursor]);
 
+view.on('resize', function (event) {
+  var padding = new Size(40, 40);
+
+  var gridSize = grid.bounds;
+  var windowSize = event.size;
+  var maxGridSize = windowSize - new Size(padding.height, 120);
+  var widthScale = maxGridSize.width / gridSize.width;
+  var heightScale = maxGridSize.height / gridSize.height;
+
+  var scale = Math.min(widthScale, heightScale);
+
+  cursor.scale(scale)
+  grid.scale(scale);
+  grid.position = view.bounds.bottomCenter - new Point(0, grid.bounds.height / 2 + 20);
+
+  var headerSize = view.size - (grid.bounds.size + padding);
+
+  timer.position = new Point(view.center.x, headerSize.height / 2 + padding.height / 4)
+});
+
 view.onMouseMove = function (event) {
   cursor.moveTo(event.point);
 }

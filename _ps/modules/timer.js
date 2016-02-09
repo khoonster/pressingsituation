@@ -4,12 +4,14 @@ var Timer = Group.extend({
 
     this.startTime = (new Date()).getTime();
     this.duration = milliseconds;
-    this.startPosition = position;
 
-    this.circle = new Shape.Circle(position, 54 / 2 + 2);
+    this.circle = new Shape.Circle(new Point(0, 0), 54 / 2 + 2);
     this.circle.fillColor = 'white';
     this.circle.strokeColor = 'black';
     this.circle.strokeWidth = 2;
+
+    this.jitter = new Point(0, 0);
+    this.jitterPercentageStart = 0.6;
 
     Group.prototype.initialize.call(this, [this.circle]);
 
@@ -24,8 +26,8 @@ var Timer = Group.extend({
 
   drawSlice: function (center, radius, angle, percentage) {
     var circumfrence = 360 * percentage;
-    var from = new Point({ angle: angle, length:radius });
-    var through = center + new Point({ angle: angle + circumfrence/2, length: radius });
+    var from = new Point({ angle: angle, length: radius });
+    var through = center + new Point({ angle: angle + circumfrence / 2, length: radius });
     var to = center + new Point({ angle: angle + circumfrence, length: radius });
     var path = new Path();
         path.add(center);
@@ -51,8 +53,10 @@ var Timer = Group.extend({
 
       if (typeof this.slice !== "undefined") this.slice.remove();
 
-      if (percentage >= 0.7) {
-        this.position = this.startPosition + Point.random() * 2;
+      if (percentage >= this.jitterPercentageStart) {
+        this.position -= this.jitter;
+        this.jitter = Point.random() * (Math.max(percentage - this.jitterPercentageStart, 0) * 20);
+        this.position += this.jitter;
       }
 
       if (percentage >= 1) {
@@ -73,7 +77,11 @@ var Timer = Group.extend({
   stop: function () {
     this.off("frame");
     this.emit("stopped");
-    this.position = this.startPosition;
+    this.position -= this.jitter;
+  },
+
+  setPosition: function () {
+    console.log('foo');
   }
 });
 
