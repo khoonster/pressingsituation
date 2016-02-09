@@ -85,6 +85,7 @@ timer.start();
 var Button = Group.extend({
   topColor: '#ff4600',
   rightSideColor: '#FF1E00',
+  bottomSideColor: '#FF3200',
   pressedColor: '#FF1E00',
 
   initialize: function (point) {
@@ -96,22 +97,30 @@ var Button = Group.extend({
     this.top = new Shape.Rectangle(new Point(0, 0), size);
     this.top.fillColor = this.topColor;
 
-    this.sides = new Path([
+    this.rightSide = new Path([
+      new Point(                       0,           0),
+      new Point(size.width + depth.width, size.height + depth.height),
+      new Point(size.width + depth.width,               depth.height),
+      new Point(size.width,            0)
+    ]);
+
+    this.rightSide.closed = true;
+    this.rightSide.fillColor = this.rightSideColor;
+
+    this.bottomSide = new Path([
       new Point(                       0,           0),
       new Point(                       0, size.height),
       new Point(             depth.width, size.height + depth.height),
-      new Point(size.width + depth.width, size.height + depth.height),
-      new Point(size.width + depth.width,               depth.height),
-      new Point(size.width,           0)
+      new Point(size.width + depth.width, size.height + depth.height)
     ]);
 
-    this.sides.closed = true;
-    this.sides.fillColor = this.rightSideColor;
+    this.bottomSide.closed = true;
+    this.bottomSide.fillColor = this.bottomSideColor;
 
     this.bottom = new Shape.Rectangle(depth, size);
     this.bottom.fillColor = this.pressedColor;
 
-    Group.prototype.initialize.call(this, [this.bottom, this.sides, this.top]);
+    Group.prototype.initialize.call(this, [this.bottom, this.bottomSide, this.rightSide, this.top]);
 
     this.top.on('mouseup', function () {
       that.press();
@@ -129,7 +138,8 @@ var Button = Group.extend({
 
   disable: function () {
     this.top.visible = false;
-    this.sides.visible = false;
+    this.rightSide.visible = false;
+    this.bottomSide.visible = false;
   }
 });
 
