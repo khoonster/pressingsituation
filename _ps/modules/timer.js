@@ -78,10 +78,6 @@ var Timer = Group.extend({
     this.off("frame");
     this.emit("stopped");
     this.position -= this.jitter;
-  },
-
-  setPosition: function () {
-    console.log('foo');
   }
 });
 
