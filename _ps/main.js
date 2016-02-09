@@ -1,6 +1,6 @@
 'use strict';
 
-var TIMEOUT = 60000;
+var TIMEOUT = 6000;
 var COLUMNS = 24;
 var ROWS = 12;
 var CELLS = COLUMNS * ROWS;
@@ -13,6 +13,7 @@ var shuffle         = require('lodash.shuffle');
 var take            = require('ramda/src/take');
 var times           = require('ramda/src/times');
 
+var Button          = require('./modules/button.js');
 var Cursor          = require('./modules/cursor.js');
 var Grid            = require('./modules/grid.js');
 var LosingButton    = require('./modules/losing_button.js');
@@ -44,12 +45,20 @@ var gamefield = new Group([grid, minefield, timer, cursor]);
 winner.on('mouseup', function () {
   map(invoker(0, 'deactivate'), losers);
   timer.stop();
+
+  mixpanel.track("Won", { count: Button.clicks });
+});
+
+timer.on('started', function () {
+  mixpanel.track("Started");
 });
 
 timer.on('ended', function () {
   map(invoker(0, 'press'), take(125, losers));
   map(invoker(0, 'disable'), drop(125, losers));
   winner.press();
+
+  mixpanel.track("Lost", { count: Button.clicks });
 });
 
 view.on('resize', function (event) {

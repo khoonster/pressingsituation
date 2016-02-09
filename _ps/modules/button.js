@@ -37,7 +37,6 @@ var top = new Shape.Rectangle(new Point(0, 0), size);
 var topSymbol = new S(top);
 
 var Button = Group.extend({
-
   initialize: function (point) {
     this.top = topSymbol.place(size / 2);
     this.rightSide = rightSideSymbol.place((size + depth) / 2);
@@ -48,6 +47,8 @@ var Button = Group.extend({
 
     this.top.on('mouseup', function () {
       this.parent.press();
+
+      Button.clicks += 1;
     });
 
     this.position = point;
@@ -66,5 +67,7 @@ var Button = Group.extend({
     this.bottomSide.visible = false;
   }
 });
+
+Button.clicks = 0;
 
 module.exports = Button;

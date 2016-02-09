@@ -27,8 +27,6 @@ var Minefield = Group.extend({
     Group.prototype.scale.apply(this, arguments);
 
     this.currentScale = this.currentScale * amount;
-
-    console.log(this.currentScale);
   }
 });
 

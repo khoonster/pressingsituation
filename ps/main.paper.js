@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-var TIMEOUT = 60000;
+var TIMEOUT = 6000;
 var COLUMNS = 24;
 var ROWS = 12;
 var CELLS = COLUMNS * ROWS;
@@ -14,6 +14,7 @@ var shuffle         = require('lodash.shuffle');
 var take            = require('ramda/src/take');
 var times           = require('ramda/src/times');
 
+var Button          = require('./modules/button.js');
 var Cursor          = require('./modules/cursor.js');
 var Grid            = require('./modules/grid.js');
 var LosingButton    = require('./modules/losing_button.js');
@@ -45,12 +46,20 @@ var gamefield = new Group([grid, minefield, timer, cursor]);
 winner.on('mouseup', function () {
   map(invoker(0, 'deactivate'), losers);
   timer.stop();
+
+  mixpanel.track("Won", { count: Button.clicks });
+});
+
+timer.on('started', function () {
+  mixpanel.track("Started");
 });
 
 timer.on('ended', function () {
   map(invoker(0, 'press'), take(125, losers));
   map(invoker(0, 'disable'), drop(125, losers));
   winner.press();
+
+  mixpanel.track("Lost", { count: Button.clicks });
 });
 
 view.on('resize', function (event) {
@@ -95,7 +104,7 @@ hijackViewMousePosition(view, function (event) {
 
 timer.start();
 
-},{"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5,"./modules/losing_button.js":6,"./modules/minefield.js":7,"./modules/timer.js":8,"./modules/winning_button.js":9,"lodash.shuffle":10,"ramda/src/constructN":17,"ramda/src/drop":20,"ramda/src/invoker":56,"ramda/src/map":60,"ramda/src/take":64,"ramda/src/times":65}],2:[function(require,module,exports){
+},{"./modules/button.js":2,"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5,"./modules/losing_button.js":6,"./modules/minefield.js":7,"./modules/timer.js":8,"./modules/winning_button.js":9,"lodash.shuffle":10,"ramda/src/constructN":17,"ramda/src/drop":20,"ramda/src/invoker":56,"ramda/src/map":60,"ramda/src/take":64,"ramda/src/times":65}],2:[function(require,module,exports){
 var S = paper.Symbol;
 
 var topColor = '#ff4600';
@@ -135,7 +144,6 @@ var top = new Shape.Rectangle(new Point(0, 0), size);
 var topSymbol = new S(top);
 
 var Button = Group.extend({
-
   initialize: function (point) {
     this.top = topSymbol.place(size / 2);
     this.rightSide = rightSideSymbol.place((size + depth) / 2);
@@ -146,6 +154,8 @@ var Button = Group.extend({
 
     this.top.on('mouseup', function () {
       this.parent.press();
+
+      Button.clicks += 1;
     });
 
     this.position = point;
@@ -164,6 +174,8 @@ var Button = Group.extend({
     this.bottomSide.visible = false;
   }
 });
+
+Button.clicks = 0;
 
 module.exports = Button;
 
@@ -313,8 +325,6 @@ var Minefield = Group.extend({
     Group.prototype.scale.apply(this, arguments);
 
     this.currentScale = this.currentScale * amount;
-
-    console.log(this.currentScale);
   }
 });
 
