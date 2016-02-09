@@ -22,13 +22,13 @@ var WinningButton   = require('./modules/winning_button.js');
 var hijackViewMousePosition = require('./modules/hijack_view_mouse_position.js');
 
 var cursor = new Cursor();
-var timer = new Timer(view.bounds.center - new Point(0, 324), TIMEOUT);
+var timer = new Timer(view.bounds.center, TIMEOUT);
 
 var losers = times(construct(LosingButton, view.bounds.center), CELLS - 1);
 var winner = new WinningButton(view.bounds.center);
 var buttons = losers.concat([winner]);
 
-var grid = new Grid(view.bounds.center + new Point(0, 63), shuffle(buttons), {
+var grid = new Grid(view.bounds.center, shuffle(buttons), {
   columns: COLUMNS,
   rows: ROWS,
   cellSize: new Size(58, 58)
