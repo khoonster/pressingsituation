@@ -82,45 +82,57 @@ hijackViewMousePosition(view, function (event) {
 timer.start();
 
 },{"./modules/cursor.js":3,"./modules/grid.js":4,"./modules/hijack_view_mouse_position.js":5,"./modules/losing_button.js":6,"./modules/timer.js":7,"./modules/winning_button.js":8,"lodash.shuffle":9,"ramda/src/construct":16,"ramda/src/drop":20,"ramda/src/invoker":56,"ramda/src/map":60,"ramda/src/take":64,"ramda/src/times":65}],2:[function(require,module,exports){
+var S = paper.Symbol;
+
+var topColor = '#ff4600';
+var rightSideColor = '#FF1E00';
+var bottomSideColor = '#FF3200';
+var pressedColor = '#FF1E00';
+
+var size = new Size(54, 54);
+var depth = new Size(9, 9);
+
+var rightSide = new Path([
+  new Point(                       0,           0),
+  new Point(size.width + depth.width, size.height + depth.height),
+  new Point(size.width + depth.width,               depth.height),
+  new Point(size.width,            0)
+]);
+    rightSide.closed = true;
+    rightSide.fillColor = rightSideColor;
+var rightSideSymbol = new S(rightSide);
+
+var bottomSide = new Path([
+  new Point(                       0,           0),
+  new Point(                       0, size.height),
+  new Point(             depth.width, size.height + depth.height),
+  new Point(size.width + depth.width, size.height + depth.height)
+]);
+    bottomSide.closed = true;
+    bottomSide.fillColor = bottomSideColor;
+var bottomSideSymbol = new S(bottomSide);
+
+var bottom = new Shape.Rectangle(depth, size);
+    bottom.fillColor = pressedColor;
+var bottomSymbol = new S(bottom);
+
+var top = new Shape.Rectangle(new Point(0, 0), size);
+    top.fillColor = topColor;
+var topSymbol = new S(top);
+
 var Button = Group.extend({
-  topColor: '#ff4600',
-  rightSideColor: '#FF1E00',
-  bottomSideColor: '#FF3200',
-  pressedColor: '#FF1E00',
 
   initialize: function (point) {
     var that = this;
 
-    var size = new Size(54, 54);
-    var depth = new Size(9, 9);
-
-    this.top = new Shape.Rectangle(new Point(0, 0), size);
-    this.top.fillColor = this.topColor;
-
-    this.rightSide = new Path([
-      new Point(                       0,           0),
-      new Point(size.width + depth.width, size.height + depth.height),
-      new Point(size.width + depth.width,               depth.height),
-      new Point(size.width,            0)
-    ]);
-
-    this.rightSide.closed = true;
-    this.rightSide.fillColor = this.rightSideColor;
-
-    this.bottomSide = new Path([
-      new Point(                       0,           0),
-      new Point(                       0, size.height),
-      new Point(             depth.width, size.height + depth.height),
-      new Point(size.width + depth.width, size.height + depth.height)
-    ]);
-
-    this.bottomSide.closed = true;
-    this.bottomSide.fillColor = this.bottomSideColor;
-
-    this.bottom = new Shape.Rectangle(depth, size);
-    this.bottom.fillColor = this.pressedColor;
+    this.top = topSymbol.place(size / 2);
+    this.rightSide = rightSideSymbol.place((size + depth) / 2);
+    this.bottomSide = bottomSideSymbol.place((size + depth) / 2);
+    this.bottom = bottomSymbol.place((size / 2) + depth);
 
     Group.prototype.initialize.call(this, [this.bottom, this.bottomSide, this.rightSide, this.top]);
+
+    // console.log(this.rightSide.position);
 
     this.top.on('mouseup', function () {
       that.press();
