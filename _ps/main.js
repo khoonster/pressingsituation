@@ -61,6 +61,10 @@ timer.on('ended', function () {
   mixpanel.track("Lost", { count: Button.clicks });
 });
 
+timer.on('stopped', function () {
+  mixpanel.track("Ended");
+});
+
 view.on('resize', function (event) {
   var padding = new Size(40, 40);
 
