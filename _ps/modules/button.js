@@ -49,6 +49,8 @@ var Button = Group.extend({
       this.parent.press();
 
       Button.clicks += 1;
+
+      this.parent.emit('clicked');
     });
 
     this.position = point;

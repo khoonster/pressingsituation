@@ -45,24 +45,12 @@ var gamefield = new Group([grid, minefield, timer, cursor]);
 winner.on('mouseup', function () {
   map(invoker(0, 'deactivate'), losers);
   timer.stop();
-
-  mixpanel.track("Won", { count: Button.clicks });
-});
-
-timer.on('started', function () {
-  mixpanel.track("Started");
 });
 
 timer.on('ended', function () {
   map(invoker(0, 'press'), take(125, losers));
   map(invoker(0, 'disable'), drop(125, losers));
   winner.press();
-
-  mixpanel.track("Lost", { count: Button.clicks });
-});
-
-timer.on('stopped', function () {
-  mixpanel.track("Ended");
 });
 
 view.on('resize', function (event) {
@@ -104,5 +92,31 @@ hijackViewMousePosition(view, function (event) {
     return new Point(0, 0);
   }
 });
+
+// Analytics
+
+map(function (button) {
+  button.on('clicked', function () {
+    analytics.track("Button Press", { count: Button.clicks })
+  });
+}, buttons);
+
+winner.on('mouseup', function () {
+  analytics.track("Won", { count: Button.clicks });
+});
+
+timer.on('stopped', function () {
+  analytics.track("Ended");
+});
+
+timer.on('started', function () {
+  analytics.track("Started");
+});
+
+timer.on('ended', function () {
+  analytics.track("Lost", { count: Button.clicks });
+});
+
+// Start
 
 timer.start();
