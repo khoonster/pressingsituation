@@ -62,6 +62,10 @@ timer.on('ended', function () {
   mixpanel.track("Lost", { count: Button.clicks });
 });
 
+timer.on('stopped', function () {
+  mixpanel.track("Ended");
+});
+
 view.on('resize', function (event) {
   var padding = new Size(40, 40);
 
@@ -250,14 +254,21 @@ module.exports = function hijackViewMousePosition(view, offsetFn) {
   var wiggle = new Point(0, 0);
   var realPosition = new Point(-9999999, 0);
   var lastWiggle;
+  var needsMouseMove = true;
+
+  view.on('mousemove', function () {
+    needsMouseMove = false;
+  });
 
   view.on('frame', function (event) {
     wiggle = offsetFn.call(this, event);
 
-    if (wiggle != lastWiggle) {
+    if (wiggle != lastWiggle && needsMouseMove) {
       view._handleEvent('mousemove', realPosition, event);
       lastWiggle = wiggle;
     }
+
+    needsMouseMove = true;
   });
 
   view._handleEvent = function (type, point, event) {
