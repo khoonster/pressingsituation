@@ -171,11 +171,10 @@ var Button = Group.extend({
     Group.prototype.initialize.call(this, [this.bottom, this.bottomSide, this.rightSide, this.top]);
 
     this.top.on('mouseup', function () {
-      this.parent.press();
-
       Button.clicks += 1;
 
       this.parent.emit('clicked');
+      this.parent.press();
     });
 
     this.position = point;
@@ -189,9 +188,9 @@ var Button = Group.extend({
   },
 
   disable: function () {
-    this.top.visible = false;
-    this.rightSide.visible = false;
-    this.bottomSide.visible = false;
+    this.top.remove();
+    this.rightSide.remove();
+    this.bottomSide.remove();
   }
 });
 
