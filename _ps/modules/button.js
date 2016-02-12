@@ -63,6 +63,7 @@ var Button = Group.extend({
   },
 
   disable: function () {
+    this.top.off('mouseup');
     this.top.remove();
     this.rightSide.remove();
     this.bottomSide.remove();
